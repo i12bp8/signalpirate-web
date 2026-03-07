@@ -36,7 +36,7 @@ if [ -d "signalpirate-web" ]; then
     git pull
 else
     # Assuming it's uploaded to github
-    git clone https://github.com/signalpirate/signalpirate-web.git
+    git clone https://github.com/i12bp8/signalpirate-web.git
     cd signalpirate-web
 fi
 
