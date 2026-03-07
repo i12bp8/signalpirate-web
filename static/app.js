@@ -446,13 +446,25 @@ async function doExport(id, format) {
       toast('Saved → ' + data.path.split('/').pop(), 'ok');
       if (typeof loadLibrary === 'function') loadLibrary();
       
-      const filename = encodeURIComponent(data.path.split('/').pop());
+      const basename = data.path.split('/').pop();
+      
+      const dl = (url, name) => {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => a.remove(), 1000);
+      };
+
       // Auto-trigger download for the .c8 file
-      window.open('/api/library/' + filename, '_blank');
+      dl('/api/library/' + encodeURIComponent(basename), basename);
       
       // Auto-trigger download for the companion .xml URH project file
       setTimeout(() => {
-        window.open('/api/library/' + filename.replace('.c8', '.xml'), '_blank');
+        const xmlName = basename.replace('.c8', '.xml');
+        dl('/api/library/' + encodeURIComponent(xmlName), xmlName);
       }, 500);
       
     } else {
