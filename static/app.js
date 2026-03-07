@@ -194,7 +194,7 @@ function grid(obj) {
 }
 
 // ── Actions ──────────────────────────────────────
-function doExport(id, fmt) { send({ cmd: 'export_signal', signal_id: id, format: fmt }); }
+// doExport moved to bottom of file
 
 // ── AI Stream Handling ───────────────────────────
 let aiStreams = {};
@@ -435,8 +435,25 @@ function toast(text, type) {
 // ── Export ───────────────────────────────────────
 async function doExport(id, format) {
   try {
-    send({ cmd: 'export_signal', data: { signal_id: id, format: format } });
-  } catch(e) { toast('Error exporting signal', 'err'); }
+    toast('Saving signal...', 'ok');
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signal_id: id, format: format })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast('Saved → ' + data.path.split('/').pop(), 'ok');
+      if (typeof loadLibrary === 'function') loadLibrary();
+      // Auto-trigger download
+      window.open('/api/library/' + encodeURIComponent(data.path.split('/').pop()), '_blank');
+    } else {
+      toast('Export failed: ' + data.error, 'err');
+    }
+  } catch(e) { 
+    console.error(e);
+    toast('Error exporting signal', 'err'); 
+  }
 }
 
 // ── Keyboard ─────────────────────────────────────
