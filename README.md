@@ -14,7 +14,7 @@ Built for Linux.
 ## Installation
 Run this one-liner to install dependencies, configure `udev` rules, and set up the Python environment:
 ```bash
-curl -sSL https://raw.githubusercontent.com/i12bp8/signalpirate-web/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/i12bp8/signalpirate-web/main/install.sh | sudo bash
 ```
 
 ### Manual Start (Post-Install)

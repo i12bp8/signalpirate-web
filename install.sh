@@ -11,7 +11,9 @@ echo -e "\033[32m╚════════════════════
 echo ""
 
 if [ "$EUID" -ne 0 ]; then
-  echo -e "\033[31m[!] Please run this installer with sudo or as root:\033[0m sudo bash install.sh"
+  echo -e "\033[31m[!] Please run this installer as root.\033[0m"
+  echo "If downloading via curl, use:"
+  echo -e "  \033[36mcurl -sSL https://raw.githubusercontent.com/i12bp8/signalpirate-web/main/install.sh | sudo bash\033[0m"
   exit 1
 fi
 
