@@ -806,18 +806,33 @@ def _write_urh_project(
   <message_formats/>
   <simulators/>
   <files>
-    <file filename="{c8_filename}">
-      <signal bit_len="1" center="{frequency / 1000000.0}" center_spacing="1" error_tolerance="5" message_length_divisor="1" modulation_type="{urh_mod_idx}" name="{project_name}" noise_maximum="0.0001" noise_minimum="-0.0001" pause_threshold="8" sample_rate="{sample_rate}" samples_per_symbol="100" tolerance="5"/>
-      <views>
-        <view show_data_bits="1" show_data_hex="0" show_protocol="0" show_signal="1" view_type="1"/>
-      </views>
-    </file>
+    <!-- URH simply lists the files in the project here -->
+    <file filename="{c8_filename}" />
   </files>
   <participants/>
   <decodings/>
   <field_types/>
 </project>
 """
+    
+    # In addition to the project file, URH expects a companion .c8.xml file
+    # for track settings like modulation, noise, center freq.
+    # We write THIS file specifically so URH reads the configuration.
+    track_xml_path = os.path.join(project_dir, f"{c8_filename}.xml")
+    track_xml_content = f"""<?xml version="1.0" ?>
+<signal bit_len="1" center="{frequency / 1000000.0}" center_spacing="1" error_tolerance="5" message_length_divisor="1" modulation_type="{urh_mod_idx}" name="{project_name}" noise_maximum="0.0001" noise_minimum="-0.0001" pause_threshold="8" sample_rate="{sample_rate}" samples_per_symbol="100" tolerance="5">
+  <messages/>
+  <views>
+    <view show_data_bits="1" show_data_hex="0" show_protocol="0" show_signal="1" view_type="1"/>
+  </views>
+</signal>
+"""
+    try:
+        with open(xml_path, "w") as f:
+            f.write(xml_content)
+        with open(track_xml_path, "w") as f:
+            f.write(track_xml_content)
+        logger.info(f"Generated URH project and signal files: {xml_path}")
     try:
         with open(xml_path, "w") as f:
             f.write(xml_content)
