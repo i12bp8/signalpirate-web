@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignalPirate — RF Analysis Platform</title>
+  <meta name="description" content="Universal sub-GHz RF signal analysis, capture, and exploitation platform">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header id="main-header">
+    <div class="header-left">
+      <h1 class="logo"><span class="logo-text">signal</span><span class="accent">pirate</span></h1>
+      <div class="device-badge">
+        <span class="dot offline" id="status-dot"></span>
+        <span id="device-name">connecting</span>
+      </div>
+    </div>
+    <div class="header-center">
+      <nav class="tabs" id="main-tabs">
+        <button class="tab active" data-tab="dashboard">Dashboard</button>
+        <button class="tab" data-tab="library">Library</button>
+        <button class="tab" data-tab="settings">Settings</button>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div class="stat-group">
+        <div class="stat"><span class="stat-val" id="signal-count">0</span><span class="stat-label">sig</span></div>
+        <div class="stat"><span class="stat-val" id="proto-count">0</span><span class="stat-label">proto</span></div>
+        <div class="stat"><span class="stat-val" id="freq-display">433.920</span><span class="stat-label">mhz</span></div>
+      </div>
+      <div class="rec-badge hidden" id="rec-badge">REC</div>
+    </div>
+  </header>
+
+  <!-- Dashboard -->
+  <main class="tab-content active" id="tab-dashboard">
+    <div class="dashboard-grid">
+      <section class="panel signal-table-panel">
+        <div class="panel-header">
+          <h2>Captures</h2>
+          <div class="panel-controls">
+            <input type="text" class="search-input" id="signal-search" placeholder="filter signals...">
+            <button class="btn-sm" id="btn-clear" title="Clear all">×</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table id="signal-table">
+            <thead>
+              <tr>
+                <th id="th-time" class="sortable">Time<span class="sort-arrow"> ▼</span></th>
+                <th id="th-model" class="sortable">Model<span class="sort-arrow"></span></th>
+                <th id="th-freq" class="sortable">Freq<span class="sort-arrow"></span></th>
+                <th id="th-mod" class="sortable">Mod<span class="sort-arrow"></span></th>
+                <th id="th-rssi" class="sortable">RSSI<span class="sort-arrow"></span></th>
+                <th id="th-sec" class="sortable">Sec<span class="sort-arrow"></span></th>
+              </tr>
+            </thead>
+            <tbody id="signal-tbody"></tbody>
+          </table>
+        </div>
+        <div class="panel-footer"><span id="table-status">waiting for signals</span></div>
+      </section>
+
+      <section class="panel detail-panel" id="detail-panel">
+        <div class="panel-header"><h2 id="detail-title">Signal Inspection</h2></div>
+        <div class="detail-split">
+          <!-- Left Column: Capture Details -->
+          <div class="detail-content-col" id="detail-content">
+            <div class="placeholder-msg">
+              <span class="placeholder-icon">◉</span>
+              <p>Select a signal to inspect</p>
+            </div>
+          </div>
+          <!-- Right Column: AI Chat -->
+          <div class="detail-chat-col" id="detail-chat">
+            <div class="chat-window" id="chat-window">
+              <div class="chat-msg ai-msg">
+                <div class="chat-bubble">Hello! Select a signal and type <code>@C_CAPTURE</code> to ask me about it, or type <code>@ALL_CAPTURES</code> to analyze everything you've intercepted.</div>
+              </div>
+            </div>
+            <div class="chat-input-area">
+              <textarea id="chat-input" placeholder="Ask the AI anything... (@C_CAPTURE, @ALL)"></textarea>
+              <button class="btn accent chat-send" id="btn-chat-send">▶</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+
+
+  <!-- Library -->
+  <main class="tab-content" id="tab-library">
+    <section class="panel" style="flex:1">
+      <div class="panel-header">
+        <h2>Capture Library</h2>
+        <div class="panel-controls">
+          <button class="btn-sm accent" id="btn-refresh-lib">refresh</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="library-table">
+          <thead><tr><th>File</th><th>Format</th><th>Size</th><th>Date</th><th style="text-align:right">Actions</th></tr></thead>
+          <tbody id="library-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+
+
+  <!-- Settings -->
+  <main class="tab-content" id="tab-settings">
+    <div class="settings-grid">
+      <div class="split-row">
+        <section class="panel">
+          <div class="panel-header"><h2>Frequency</h2></div>
+          <div class="panel-body">
+            <div class="freq-presets">
+              <button class="btn freq-btn" data-freq="315000000">315 MHz</button>
+              <button class="btn freq-btn" data-freq="390000000">390 MHz</button>
+              <button class="btn freq-btn active" data-freq="433920000">433.92 MHz</button>
+              <button class="btn freq-btn" data-freq="868350000">868.35 MHz</button>
+              <button class="btn freq-btn" data-freq="915000000">915 MHz</button>
+            </div>
+            <div class="form-group" style="margin-top:12px">
+              <label>Custom Frequency (Hz)</label>
+              <div class="form-row">
+                <input type="number" id="custom-freq" value="433920000" class="input-lg mono">
+                <button class="btn accent" id="btn-set-freq">Set</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header"><h2>Engine Status</h2></div>
+          <div class="panel-body">
+            <div class="status-grid">
+              <div class="status-item"><span class="status-label">Status</span><span class="status-val" id="st-running">—</span></div>
+              <div class="status-item"><span class="status-label">Uptime</span><span class="status-val" id="st-uptime">—</span></div>
+              <div class="status-item"><span class="status-label">Decoded</span><span class="status-val" id="st-signals">—</span></div>
+              <div class="status-item"><span class="status-label">Protocols</span><span class="status-val" id="st-protocols">—</span></div>
+              <div class="status-item"><span class="status-label">Device</span><span class="status-val" id="st-device">—</span></div>
+              <div class="status-item"><span class="status-label">Frequency</span><span class="status-val" id="st-freq">—</span></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-header"><h2>AI Configuration</h2></div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>OpenRouter API Key</label>
+              <input type="password" id="ai-key" class="input-lg mono" placeholder="sk-or-...">
+            </div>
+            <div class="form-group">
+              <label>Model (OpenRouter format)</label>
+              <input type="text" id="ai-model" class="input-lg mono" value="anthropic/claude-3.5-haiku" placeholder="provider/model-name">
+            </div>
+            <div class="action-bar" style="margin-top: 14px;">
+              <button class="btn accent" id="btn-save-config">Save AI Config</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header"><h2>RTL-SDR Configuration</h2></div>
+        <div class="panel-body">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+            <label class="toggle-switch">
+              <input type="checkbox" id="rtl-autolevel" checked>
+              <span class="toggle-slider"></span>
+            </label>
+            <span style="font-size:13px">Auto Leveling (-Y autolevel)</span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+            <label class="toggle-switch">
+              <input type="checkbox" id="rtl-squelch" checked>
+              <span class="toggle-slider"></span>
+            </label>
+            <span style="font-size:13px">Squelch (-Y squelch)</span>
+          </div>
+
+          <div class="form-group" style="margin-top:12px; margin-bottom: 12px">
+            <label>Manual Gain (dB) — applied if Auto Level is disabled</label>
+            <div class="form-row">
+              <input type="number" id="rtl-gain" value="38" class="input-lg mono" min="0" max="50">
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer id="main-footer">
+    <span>EDUCATIONAL & RESEARCH ONLY — TX on own devices — Unauthorized RF may violate law</span>
+  </footer>
+
+  <script src="/static/app.js?v=20260307-5"></script>
+</body>
+</html>

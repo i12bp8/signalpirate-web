@@ -1,0 +1,16 @@
+2026-03-07 08:26:22,674 [signalpirate.protocol_db] Loaded 1016 protocols
+2026-03-07 08:26:22,674 [signalpirate.vuln_db] Loaded 31 vulnerabilities
+INFO:     Started server process [15722]
+INFO:     Waiting for application startup.
+2026-03-07 08:26:22,685 [signalpirate.server] 🏴‍☠️ SignalPirate Web v4.0 starting...
+2026-03-07 08:26:22,685 [signalpirate.tx_engine] Research mode ENABLED — TX capabilities active
+2026-03-07 08:26:22,685 [signalpirate.server] ⚠️ TX Research Mode auto-enabled from config
+2026-03-07 08:26:22,693 [signalpirate.sdr_detector] No SDR devices detected
+2026-03-07 08:26:22,693 [signalpirate.server] ⚠️ No SDR device detected — running in demo mode
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8433 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-03-07 08:27:13,208 [signalpirate.server] SignalPirate stopped
+INFO:     Application shutdown complete.
+INFO:     Finished server process [15722]

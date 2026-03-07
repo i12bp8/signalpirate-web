@@ -1,0 +1,33 @@
+# Environments
+venv/
+env/
+.env
+.venv
+signalpirate/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary and local data files
+data/
+data.json
+config.json
+settings.json
+*.sqlite3
+
+# Captured RF data files (don't upload user dumps)
+*.sub
+*.c8
+*.cu8
+captures/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
