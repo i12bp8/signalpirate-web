@@ -541,7 +541,7 @@ async def api_set_frequency(body: dict):
 async def api_library():
     """List saved capture files."""
     files = []
-    for ext in ("*.sub", "*.fob", "*.json", "*.c8", "*.raw", "*.cu8", "*.u8"):
+    for ext in ("*.sub", "*.fob", "*.json", "*.c8", "*.xml", "*.raw", "*.cu8", "*.u8"):
         for f in CAPTURE_DIR.glob(ext):
             files.append({
                 "name": f.name,
