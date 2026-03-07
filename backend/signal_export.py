@@ -264,12 +264,21 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
     protocol_security_level = str(protocol_info.get("security_level", "")).strip()
 
     # Best fidelity path: convert rtl_433 autosaved IQ capture when available.
-    # If this signal object did not get iq_file attached, try matching by time/freq.
     iq_file = signal_data.get("iq_file")
+    
+    # If the frontend sent an absolute path from an old session under a different user 
+    # (e.g., /home/sam/...) but we are now running as a systemd service (/opt/...),
+    # extract just the filename and look for it in the current IQ_CAPTURE_DIR.
+    if isinstance(iq_file, str) and "/" in iq_file:
+        fallback_path = os.path.join(IQ_CAPTURE_DIR, os.path.basename(iq_file))
+        if os.path.isfile(fallback_path):
+            iq_file = fallback_path
+            
     if not (isinstance(iq_file, str) and os.path.isfile(iq_file)):
         iq_file = _find_matching_iq_capture(freq_hz=freq_hz, signal_ts=ts)
         if iq_file:
             logger.info("Matched IQ capture for export: %s", iq_file)
+            
     # Verify/upgrade IQ selection by checking nearby files for one that actually
     # decodes to the selected model.
     iq_file = _choose_iq_for_export(

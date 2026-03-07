@@ -113,6 +113,13 @@ elif [ "$1" == "status" ]; then
     systemctl status signalpirate
 elif [ "$1" == "log" ] || [ "$1" == "logs" ]; then
     sudo journalctl -u signalpirate -n 100 -f
+elif [ "$1" == "update" ]; then
+    echo "🔄 Pulling latest updates from GitHub..."
+    cd /opt/signalpirate-web
+    sudo git pull
+    echo "🔄 Restarting SignalPirate service..."
+    sudo systemctl restart signalpirate
+    echo "✅ Update complete!"
 else
     echo "SignalPirate CLI"
     echo "Usage: signalpirate {start|stop|restart|status|logs}"
