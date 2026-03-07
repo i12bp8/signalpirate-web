@@ -833,10 +833,6 @@ def _write_urh_project(
         with open(track_xml_path, "w") as f:
             f.write(track_xml_content)
         logger.info(f"Generated URH project and signal files: {xml_path}")
-    try:
-        with open(xml_path, "w") as f:
-            f.write(xml_content)
-        logger.info(f"Generated URH project file: {xml_path}")
     except Exception as e:
         logger.warning(f"Failed writing URH project file for {c8_filepath}: {e}")
 
