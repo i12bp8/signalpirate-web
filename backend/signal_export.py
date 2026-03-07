@@ -319,6 +319,12 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
                 protocol_security=protocol_security,
                 protocol_security_level=protocol_security_level,
             )
+            _write_urh_project(
+                filepath, 
+                sample_rate=out_rate, 
+                frequency=tx_freq,
+                modulation=signal_data.get("modulation", signal_data.get("mod", "OOK"))
+            )
             logger.info(f"Exported .c8 from captured IQ: {filepath}")
             return filepath
     
@@ -339,6 +345,12 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
             protocol_security=protocol_security,
             protocol_security_level=protocol_security_level,
         )
+        _write_urh_project(
+            filepath, 
+            sample_rate=gen.sample_rate, 
+            frequency=freq_hz,
+            modulation=signal_data.get("modulation", signal_data.get("mod", "OOK"))
+        )
     else:
         # Fallback to reconstructing from hex
         data_hex = _extract_hex(signal_data)
@@ -357,6 +369,12 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
                     protocol_security=protocol_security,
                     protocol_security_level=protocol_security_level,
                 )
+                _write_urh_project(
+                    filepath, 
+                    sample_rate=gen.sample_rate, 
+                    frequency=freq_hz,
+                    modulation="OOK"
+                )
             except Exception:
                 gen.generate_ook_iq("10" * 50, 2000, filepath)
                 _write_c8_meta(
@@ -370,6 +388,12 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
                     protocol_security=protocol_security,
                     protocol_security_level=protocol_security_level,
                 )
+                _write_urh_project(
+                    filepath, 
+                    sample_rate=gen.sample_rate, 
+                    frequency=freq_hz,
+                    modulation="OOK"
+                )
         else:
             gen.generate_ook_iq("10" * 50, 2000, filepath)
             _write_c8_meta(
@@ -382,6 +406,12 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
                 protocol_name=protocol_name,
                 protocol_security=protocol_security,
                 protocol_security_level=protocol_security_level,
+            )
+            _write_urh_project(
+                filepath, 
+                sample_rate=gen.sample_rate, 
+                frequency=freq_hz,
+                modulation="OOK"
             )
             
     logger.info(f"Exported .c8: {filepath}")
@@ -749,6 +779,51 @@ def _write_c8_meta(
             json.dump(meta, f, indent=2)
     except Exception as e:
         logger.warning(f"Failed writing c8 metadata for {path}: {e}")
+
+
+def _write_urh_project(
+    c8_filepath: str,
+    sample_rate: int,
+    frequency: int,
+    modulation: Optional[str] = "OOK"
+) -> None:
+    """
+    Generate a URH (Universal Radio Hacker) project file next to the exported .c8
+    so that URH opens with the correct sample rate, frequency, and demodulation set.
+    """
+    c8_filename = os.path.basename(c8_filepath)
+    project_dir = os.path.dirname(c8_filepath)
+    project_name = os.path.splitext(c8_filename)[0]
+    xml_path = os.path.join(project_dir, f"{project_name}.xml")
+    
+    # Map SignalPirate modulations to URH modulation indexes (0=ASK/OOK, 1=FSK)
+    urh_mod_idx = 1 if "FSK" in str(modulation).upper() else 0
+    
+    # URH project template
+    # Note: <filename> is relative to the directory containing the .xml file
+    xml_content = f"""<?xml version="1.0" ?>
+<project description="" name="{project_name}">
+  <message_formats/>
+  <simulators/>
+  <files>
+    <file filename="{c8_filename}">
+      <signal bit_len="1" center="{frequency / 1000000.0}" center_spacing="1" error_tolerance="5" message_length_divisor="1" modulation_type="{urh_mod_idx}" name="{project_name}" noise_maximum="0.0001" noise_minimum="-0.0001" pause_threshold="8" sample_rate="{sample_rate}" samples_per_symbol="100" tolerance="5"/>
+      <views>
+        <view show_data_bits="1" show_data_hex="0" show_protocol="0" show_signal="1" view_type="1"/>
+      </views>
+    </file>
+  </files>
+  <participants/>
+  <decodings/>
+  <field_types/>
+</project>
+"""
+    try:
+        with open(xml_path, "w") as f:
+            f.write(xml_content)
+        logger.info(f"Generated URH project file: {xml_path}")
+    except Exception as e:
+        logger.warning(f"Failed writing URH project file for {c8_filepath}: {e}")
 
 
 # ──────────────────────────────────────────────────────

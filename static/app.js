@@ -445,8 +445,16 @@ async function doExport(id, format) {
     if (data.ok) {
       toast('Saved → ' + data.path.split('/').pop(), 'ok');
       if (typeof loadLibrary === 'function') loadLibrary();
-      // Auto-trigger download
-      window.open('/api/library/' + encodeURIComponent(data.path.split('/').pop()), '_blank');
+      
+      const filename = encodeURIComponent(data.path.split('/').pop());
+      // Auto-trigger download for the .c8 file
+      window.open('/api/library/' + filename, '_blank');
+      
+      // Auto-trigger download for the companion .xml URH project file
+      setTimeout(() => {
+        window.open('/api/library/' + filename.replace('.c8', '.xml'), '_blank');
+      }, 500);
+      
     } else {
       toast('Export failed: ' + data.error, 'err');
     }
