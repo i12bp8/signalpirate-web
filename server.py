@@ -51,6 +51,7 @@ vuln_db.load()
 protocol_catalog = protocol_features.build_protocol_catalog(proto_db.get_all())
 sdr = SDRDetector()
 engine = RTL433Engine(protocol_db=proto_db, vuln_db=vuln_db)
+INIT_SIGNAL_HISTORY_COUNT = 250
 
 # Connected WebSocket clients
 ws_clients: Set[WebSocket] = set()
@@ -207,7 +208,7 @@ async def websocket_endpoint(ws: WebSocket):
         "type": "init",
         "data": {
             "stats": engine.get_stats(),
-            "signals": list(signal_history)[-50:] if signal_history else [],
+            "signals": list(signal_history)[-INIT_SIGNAL_HISTORY_COUNT:] if signal_history else [],
             "device": {
                 "name": sdr.primary_device.name if sdr.primary_device else "No Device",
                 "type": sdr.primary_device.device_type if sdr.primary_device else "none",
@@ -267,7 +268,7 @@ async def _handle_ws_command(ws: WebSocket, msg: dict) -> None:
         await ws.send_text(json.dumps({"type": "config_saved", "data": updated}, default=str))
 
     elif cmd == "get_signals":
-        count = int(data.get("count", 50))
+        count = int(data.get("count", INIT_SIGNAL_HISTORY_COUNT))
         sigs = list(signal_history)[-count:] if signal_history else []
         await ws.send_text(json.dumps({"type": "signals", "data": sigs}, default=str))
 
@@ -566,7 +567,7 @@ async def api_export(body: dict):
 
 
 @app.get("/api/signals")
-async def api_signals(count: int = 50):
+async def api_signals(count: int = INIT_SIGNAL_HISTORY_COUNT):
     return signal_history[-count:]
 
 
@@ -591,6 +592,8 @@ async def api_library():
     files = []
     for ext in ("*.sub", "*.fob", "*.json", "*.cs8", "*.c8", "*.xml", "*.zip", "*.raw", "*.cu8", "*.u8"):
         for f in CAPTURE_DIR.glob(ext):
+            if f.name.endswith(".urh.zip"):
+                continue
             companion_zip = f.with_suffix(".urh.zip")
             variant_meta = Path(str(f) + ".variant.json")
             files.append({

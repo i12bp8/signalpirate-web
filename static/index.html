@@ -10,43 +10,82 @@
 </head>
 <body>
   <header id="main-header">
-    <div class="header-left">
-      <h1 class="logo"><span class="logo-text">signal</span><span class="accent">pirate</span></h1>
+    <div class="brand-cluster">
+      <div class="brand-mark">SP</div>
+      <div class="brand-copy">
+        <h1>SignalPirate</h1>
+        <p>Capture, inspect, export, replay</p>
+      </div>
+    </div>
+
+    <nav class="tabs" id="main-tabs">
+      <button class="tab active" data-tab="dashboard">Monitor</button>
+      <button class="tab" data-tab="protocols">Protocol Atlas</button>
+      <button class="tab" data-tab="library">Library</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <div class="header-meta">
       <div class="device-badge">
         <span class="dot offline" id="status-dot"></span>
         <span id="device-name">connecting</span>
       </div>
-    </div>
-    <div class="header-center">
-      <nav class="tabs" id="main-tabs">
-        <button class="tab active" data-tab="dashboard">Dashboard</button>
-        <button class="tab" data-tab="protocols">Protocols</button>
-        <button class="tab" data-tab="library">Library</button>
-        <button class="tab" data-tab="settings">Settings</button>
-      </nav>
-    </div>
-    <div class="header-right">
+      <div class="mode-badge locked" id="mode-badge">Research Locked</div>
       <div class="stat-group">
-        <div class="stat"><span class="stat-val" id="signal-count">0</span><span class="stat-label">sig</span></div>
-        <div class="stat"><span class="stat-val" id="proto-count">0</span><span class="stat-label">proto</span></div>
+        <div class="stat"><span class="stat-val" id="signal-count">0</span><span class="stat-label">captures</span></div>
+        <div class="stat"><span class="stat-val" id="proto-count">0</span><span class="stat-label">models</span></div>
         <div class="stat"><span class="stat-val" id="freq-display">433.920</span><span class="stat-label">mhz</span></div>
       </div>
-      <div class="rec-badge hidden" id="rec-badge">REC</div>
     </div>
   </header>
 
   <main class="tab-content active" id="tab-dashboard">
-    <div class="dashboard-grid">
-      <section class="panel signal-table-panel">
-        <div class="panel-header">
-          <h2>Captures</h2>
+    <div class="monitor-shell">
+      <aside class="panel capture-panel">
+        <div class="panel-header tall">
+          <div>
+            <h2>Live Capture Stream</h2>
+            <p class="panel-copy">Watch incoming decodes, filter noise, and promote one capture into the workbench.</p>
+          </div>
           <div class="panel-controls">
-            <input type="text" class="search-input" id="signal-search" placeholder="filter signals...">
-            <button class="btn-sm" id="btn-clear" title="Clear all">×</button>
+            <input type="text" class="search-input" id="signal-search" placeholder="filter captures...">
+            <button class="btn-sm" id="btn-reset-filters" title="Clear search and stream filters">Reset Filters</button>
+            <button class="btn-sm" id="btn-clear" title="Clear all captures">Clear</button>
           </div>
         </div>
+        <div class="workflow-strip">
+          <span class="workflow-step active">1. Capture</span>
+          <span class="workflow-step">2. Inspect</span>
+          <span class="workflow-step">3. Export / Edit</span>
+          <span class="workflow-step">4. Replay</span>
+        </div>
+        <div class="stream-filter-card">
+          <div class="stream-filter-copy">
+            <span class="eyebrow">Live stream controls</span>
+            <p>Apply capture-scoping filters here so you can immediately see when the stream is focused on one model or deduplicated.</p>
+          </div>
+          <div class="stream-filter-grid">
+            <div class="form-group">
+              <label for="quick-sniper-model">Focus Model</label>
+              <input type="text" id="quick-sniper-model" class="input-lg mono" placeholder="All models">
+            </div>
+            <div class="setting-row compact">
+              <div>
+                <strong>Unique Only</strong>
+                <p>Suppress repeated decodes in the live stream.</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="quick-unique-scans">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="stream-filter-actions">
+              <button class="btn-sm accent" id="btn-apply-stream-filters">Apply Stream Filters</button>
+            </div>
+          </div>
+        </div>
+        <div id="filter-banner" class="inline-banner hidden"></div>
         <div class="table-wrapper">
-          <div id="sniper-banner" style="display:none; background: rgba(0,0,0,0.5); border-left: 3px solid var(--accent); color: var(--accent); padding: 10px 14px; margin-bottom: 8px; font-size: 13px; font-weight: 500; align-items: center; justify-content: space-between;"></div>
           <table id="signal-table">
             <thead>
               <tr>
@@ -62,85 +101,188 @@
             <tbody id="signal-tbody"></tbody>
           </table>
         </div>
-        <div class="panel-footer"><span id="table-status">waiting for signals</span></div>
-      </section>
+        <div class="panel-footer"><span id="table-status">waiting for captures</span></div>
+      </aside>
 
-      <section class="panel detail-panel" id="detail-panel">
-        <div class="panel-header"><h2 id="detail-title">Signal Inspection</h2></div>
-        <div class="detail-split">
-          <div class="detail-content-col" id="detail-content">
-            <div class="placeholder-msg">
-              <span class="placeholder-icon">◉</span>
-              <p>Select a signal to inspect</p>
+      <section class="panel workspace-panel">
+        <div class="panel-header tall">
+          <div>
+            <h2>Signal Workbench</h2>
+            <p class="panel-copy">Decode context, run exports, replay raw IQ, or build supported protocol variants.</p>
+          </div>
+          <div class="selection-badge" id="selected-flow-pill">No capture selected</div>
+        </div>
+        <div class="workspace-scroll">
+          <div class="workspace-intro">
+            <div class="intro-card">
+              <span class="intro-kicker">Recommended flow</span>
+              <strong>Start in Monitor, save a good capture, then replay raw or build a variant only if the protocol is supported.</strong>
+            </div>
+            <div class="intro-metrics">
+              <div class="metric-card"><span class="metric-label">Device</span><span class="metric-value" id="workspace-device">connecting</span></div>
+              <div class="metric-card"><span class="metric-label">Research Mode</span><span class="metric-value" id="workspace-mode">locked</span></div>
+              <div class="metric-card"><span class="metric-label">Selected Flow</span><span class="metric-value" id="workspace-flow">none</span></div>
             </div>
           </div>
-          <div class="detail-chat-col" id="detail-chat">
+
+          <div id="detail-content" class="detail-stack">
+            <div class="placeholder-msg compact">
+              <span class="placeholder-icon">◎</span>
+              <p>Select a capture from the stream to open the workbench.</p>
+            </div>
+          </div>
+
+          <section class="assistant-card">
+            <div class="assistant-head">
+              <div>
+                <h3>AI Assistant</h3>
+                <p>Ask about the selected capture or the whole session without leaving the workbench.</p>
+              </div>
+            </div>
             <div class="chat-window" id="chat-window">
               <div class="chat-msg ai-msg">
-                <div class="chat-bubble">Hello! Select a signal and type <code>@C_CAPTURE</code> to ask me about it, or type <code>@ALL_CAPTURES</code> to analyze everything you've intercepted.</div>
+                <div class="chat-bubble">Select a capture and type <code>@C_CAPTURE</code> to analyze it, or use <code>@ALL_CAPTURES</code> to summarize the whole session.</div>
               </div>
             </div>
             <div class="chat-input-area">
-              <textarea id="chat-input" placeholder="Ask the AI anything... (@C_CAPTURE, @ALL)"></textarea>
-              <button class="btn accent chat-send" id="btn-chat-send">▶</button>
+              <textarea id="chat-input" placeholder="Ask the AI anything... (@C_CAPTURE, @ALL_CAPTURES)"></textarea>
+              <button class="btn accent chat-send" id="btn-chat-send">Send</button>
             </div>
-          </div>
+          </section>
         </div>
       </section>
     </div>
   </main>
 
   <main class="tab-content" id="tab-protocols">
-    <section class="panel" style="flex:1">
-      <div class="panel-header">
-        <h2>Protocol Atlas</h2>
-        <div class="panel-controls">
-          <input type="text" class="search-input" id="protocol-search" placeholder="filter protocols, categories, tools...">
-          <button class="btn-sm accent" id="btn-refresh-protocols">refresh</button>
+    <div class="screen-shell">
+      <section class="panel full-panel">
+        <div class="panel-header tall">
+          <div>
+            <h2>Protocol Atlas</h2>
+            <p class="panel-copy">Every protocol in the database with a support tier and GitHub tooling suggestions.</p>
+          </div>
+          <div class="panel-controls">
+            <input type="text" class="search-input wide" id="protocol-search" placeholder="filter protocols, categories, tools...">
+            <button class="btn-sm accent" id="btn-refresh-protocols">Refresh</button>
+          </div>
         </div>
-      </div>
-      <div class="table-wrapper">
-        <table id="protocol-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Modulation</th>
-              <th>Encoding</th>
-              <th>Support</th>
-              <th>GitHub Tools</th>
-            </tr>
-          </thead>
-          <tbody id="protocol-tbody"></tbody>
-        </table>
-      </div>
-      <div class="panel-footer"><span id="protocol-status">loading protocol atlas</span></div>
-    </section>
+        <div class="callout-card atlas-callout">
+          <strong>Support tiers</strong>
+          <div class="callout-row">
+            <span class="flow-pill editable">Structured Edit</span>
+            <span class="flow-pill replay">Replay After Capture</span>
+            <span class="flow-pill view">Research / Capture</span>
+          </div>
+          <p>Editable means SignalPirate has a protocol-aware editor. Replay means capture-first raw replay. Research means use the toolchain cards and inspect the waveform before assuming replay or editing will work.</p>
+        </div>
+        <div class="table-wrapper">
+          <table id="protocol-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Modulation</th>
+                <th>Encoding</th>
+                <th>Support</th>
+                <th>GitHub Tools</th>
+              </tr>
+            </thead>
+            <tbody id="protocol-tbody"></tbody>
+          </table>
+        </div>
+        <div class="panel-footer"><span id="protocol-status">loading protocol atlas</span></div>
+      </section>
+    </div>
   </main>
 
   <main class="tab-content" id="tab-library">
-    <section class="panel" style="flex:1">
-      <div class="panel-header">
-        <h2>Capture Library</h2>
-        <div class="panel-controls">
-          <button class="btn-sm accent" id="btn-refresh-lib">refresh</button>
+    <div class="screen-shell">
+      <section class="panel full-panel">
+        <div class="panel-header tall">
+          <div>
+            <h2>Capture Library</h2>
+            <p class="panel-copy">Stored IQ, URH projects, and generated replay variants.</p>
+          </div>
+          <div class="panel-controls">
+            <button class="btn-sm accent" id="btn-refresh-lib">Refresh</button>
+          </div>
         </div>
-      </div>
-      <div class="table-wrapper">
-        <table id="library-table">
-          <thead><tr><th>File</th><th>Format</th><th>Size</th><th>Date</th><th>Flags</th><th style="text-align:right">Actions</th></tr></thead>
-          <tbody id="library-tbody"></tbody>
-        </table>
-      </div>
-    </section>
+        <div class="callout-card">
+          <strong>Library workflow</strong>
+          <p>Use saved `.cs8` files for faithful raw replay, companion `.urh.zip` files for waveform analysis, and `variant` entries for synthesized protocol edits.</p>
+        </div>
+        <div class="table-wrapper">
+          <table id="library-table">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Format</th>
+                <th>Size</th>
+                <th>Date</th>
+                <th>Flags</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="library-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </main>
 
   <main class="tab-content" id="tab-settings">
-    <div class="settings-grid">
-      <div class="split-row">
+    <div class="screen-shell settings-shell">
+      <section class="panel settings-hero">
+        <div class="panel-body hero-body">
+          <div>
+            <h2>Settings</h2>
+            <p class="panel-copy">Tune the radio, control safety gates, and manage AI/system behavior from one place.</p>
+          </div>
+          <div class="hero-actions">
+            <div class="save-state idle" id="settings-save-state">Autosave enabled</div>
+            <button class="btn accent" id="btn-save-settings">Save All Settings</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="settings-grid">
         <section class="panel">
-          <div class="panel-header"><h2>Frequency</h2></div>
-          <div class="panel-body">
+          <div class="panel-header"><h2>Safety And Replay</h2></div>
+          <div class="panel-body stack-gap">
+            <div class="setting-row primary">
+              <div>
+                <strong>Research Mode</strong>
+                <p>Required for TX replay and TX probe. This toggle saves immediately.</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="research-mode">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div>
+                <strong>Unique Scans Only</strong>
+                <p>Suppress duplicate captures repeating inside a 60-second window.</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="unique-scans">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label>Sniper Mode Model Filter</label>
+              <input type="text" id="sniper-model" class="input-lg mono" placeholder="e.g. Auriol-V2">
+              <p class="field-help">Only pass captures whose model name matches this value. Leave blank to disable.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header"><h2>Radio</h2></div>
+          <div class="panel-body stack-gap">
             <div class="freq-presets">
               <button class="btn freq-btn" data-freq="315000000">315 MHz</button>
               <button class="btn freq-btn" data-freq="390000000">390 MHz</button>
@@ -148,13 +290,57 @@
               <button class="btn freq-btn" data-freq="868350000">868.35 MHz</button>
               <button class="btn freq-btn" data-freq="915000000">915 MHz</button>
             </div>
-            <div class="form-group" style="margin-top:12px">
+
+            <div class="form-group">
               <label>Custom Frequency (Hz)</label>
               <div class="form-row">
                 <input type="number" id="custom-freq" value="433920000" class="input-lg mono">
                 <button class="btn accent" id="btn-set-freq">Set</button>
               </div>
             </div>
+
+            <div class="setting-row">
+              <div>
+                <strong>Auto Leveling</strong>
+                <p>Apply rtl_433 `-Y autolevel` for easier receive leveling.</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="rtl-autolevel" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div>
+                <strong>Squelch</strong>
+                <p>Apply rtl_433 `-Y squelch` to cut background noise bursts.</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="rtl-squelch" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label>Manual Gain (dB)</label>
+              <input type="number" id="rtl-gain" value="38" class="input-lg mono" min="0" max="50">
+              <p class="field-help">Used when Auto Leveling is disabled.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header"><h2>AI</h2></div>
+          <div class="panel-body stack-gap">
+            <div class="form-group">
+              <label>OpenRouter API Key</label>
+              <input type="password" id="ai-key" class="input-lg mono" placeholder="sk-or-...">
+            </div>
+            <div class="form-group">
+              <label>Model</label>
+              <input type="text" id="ai-model" class="input-lg mono" value="anthropic/claude-3.5-haiku" placeholder="provider/model-name">
+            </div>
+            <p class="field-help">These settings are saved with the rest of the system configuration.</p>
           </div>
         </section>
 
@@ -162,93 +348,23 @@
           <div class="panel-header"><h2>Engine Status</h2></div>
           <div class="panel-body">
             <div class="status-grid">
-              <div class="status-item"><span class="status-label">Status</span><span class="status-val" id="st-running">—</span></div>
-              <div class="status-item"><span class="status-label">Uptime</span><span class="status-val" id="st-uptime">—</span></div>
-              <div class="status-item"><span class="status-label">Decoded</span><span class="status-val" id="st-signals">—</span></div>
-              <div class="status-item"><span class="status-label">Protocols</span><span class="status-val" id="st-protocols">—</span></div>
-              <div class="status-item"><span class="status-label">Device</span><span class="status-val" id="st-device">—</span></div>
-              <div class="status-item"><span class="status-label">Frequency</span><span class="status-val" id="st-freq">—</span></div>
+              <div class="status-item"><span class="status-label">Status</span><span class="status-val" id="st-running">-</span></div>
+              <div class="status-item"><span class="status-label">Uptime</span><span class="status-val" id="st-uptime">-</span></div>
+              <div class="status-item"><span class="status-label">Decoded</span><span class="status-val" id="st-signals">-</span></div>
+              <div class="status-item"><span class="status-label">Protocols</span><span class="status-val" id="st-protocols">-</span></div>
+              <div class="status-item"><span class="status-label">Device</span><span class="status-val" id="st-device">-</span></div>
+              <div class="status-item"><span class="status-label">Frequency</span><span class="status-val" id="st-freq">-</span></div>
             </div>
           </div>
         </section>
       </div>
-
-      <section class="panel">
-        <div class="panel-header"><h2>AI Configuration</h2></div>
-        <div class="panel-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label>OpenRouter API Key</label>
-              <input type="password" id="ai-key" class="input-lg mono" placeholder="sk-or-...">
-            </div>
-            <div class="form-group">
-              <label>Model (OpenRouter format)</label>
-              <input type="text" id="ai-model" class="input-lg mono" value="anthropic/claude-3.5-haiku" placeholder="provider/model-name">
-            </div>
-            <div class="action-bar" style="margin-top: 14px;">
-              <button class="btn accent" id="btn-save-config">Save AI Config</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-header"><h2>RTL-SDR Configuration</h2></div>
-        <div class="panel-body">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
-            <label class="toggle-switch">
-              <input type="checkbox" id="rtl-autolevel" checked>
-              <span class="toggle-slider"></span>
-            </label>
-            <span style="font-size:13px">Auto Leveling (-Y autolevel)</span>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
-            <label class="toggle-switch">
-              <input type="checkbox" id="rtl-squelch" checked>
-              <span class="toggle-slider"></span>
-            </label>
-            <span style="font-size:13px">Squelch (-Y squelch)</span>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
-            <label class="toggle-switch">
-              <input type="checkbox" id="unique-scans">
-              <span class="toggle-slider"></span>
-            </label>
-            <span style="font-size:13px">Unique Scans Only (Drop identical replays within 60s)</span>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
-            <label class="toggle-switch">
-              <input type="checkbox" id="research-mode">
-              <span class="toggle-slider"></span>
-            </label>
-            <span style="font-size:13px">Research Mode (unlock TX replay and TX probe actions)</span>
-          </div>
-
-          <div class="form-group" style="margin-top:12px; margin-bottom: 12px">
-            <label>🎯 Sniper Mode (Filter by Model Name) — leave blank to disable</label>
-            <div class="form-row">
-              <input type="text" id="sniper-model" value="" class="input-lg mono" placeholder="e.g. Auriol-V2">
-            </div>
-          </div>
-
-          <div class="form-group" style="margin-top:12px; margin-bottom: 12px">
-            <label>Manual Gain (dB) — applied if Auto Level is disabled</label>
-            <div class="form-row">
-              <input type="number" id="rtl-gain" value="38" class="input-lg mono" min="0" max="50">
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   </main>
 
   <footer id="main-footer">
-    <span>EDUCATIONAL & RESEARCH ONLY — TX on own devices — Unauthorized RF may violate law</span>
+    <span>Educational and research use only. TX only on hardware and spectrum you are authorized to test.</span>
   </footer>
 
-  <script src="/static/app.js?v=20260308-1"></script>
+  <script src="/static/app.js?v=20260308-2"></script>
 </body>
 </html>
