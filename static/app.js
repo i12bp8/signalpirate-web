@@ -368,7 +368,6 @@ function renderDetail(sig) {
   const caps = sig.capabilities || {};
   const editor = caps.editor;
   const payload = getPayloadEntries(sig);
-  const tools = Array.isArray(caps.tools) ? caps.tools : [];
   const freq = sig.frequency ? (sig.frequency / 1e6).toFixed(3) + ' MHz' : '—';
   const ts = sig.timestamp ? new Date(sig.timestamp * 1000).toLocaleString() : '—';
   const rssi = sig.rssi != null ? sig.rssi.toFixed(1) + ' dBm' : '—';
@@ -434,7 +433,6 @@ function renderDetail(sig) {
   }
   html += '</div><div class="detail-column">';
   if (editor) html += renderEditor(sig, editor);
-  if (tools.length) html += renderToolsCard(tools);
   html += `
     <section class="detail-card">
       <h4>Raw Capture Data</h4>
@@ -528,27 +526,6 @@ function renderEditorField(signalId, field) {
   `;
 }
 
-function renderToolsCard(tools) {
-  return `
-    <section class="detail-card">
-      <h4>Recommended Tools</h4>
-      <div class="tool-list">${tools.slice(0, 5).map(renderToolCard).join('')}</div>
-    </section>
-  `;
-}
-
-function renderToolCard(tool) {
-  return `
-    <div class="tool-card">
-      <div class="tool-card-head">
-        <h4><a href="${esc(tool.repo)}" target="_blank" rel="noreferrer">${esc(tool.name)}</a></h4>
-      </div>
-      <div class="tool-summary">${esc(tool.summary || '')}</div>
-      <div class="tool-reasons">${(tool.reasons || []).slice(0, 1).map(reason => esc(reason)).join('')}</div>
-    </div>
-  `;
-}
-
 function renderTxStatus(status) {
   const models = Array.isArray(status.rx_models_2s) ? status.rx_models_2s.map(item => `${item.model} (${item.count})`).join(', ') : '—';
   return `
@@ -587,14 +564,13 @@ function renderProtocolCatalog() {
       proto.modulation,
       proto.encoding,
       proto.support?.label,
-      ...(proto.tools || []).map(tool => tool.name),
     ].join(' ').toLowerCase();
     return hay.includes(protocolFilter);
   });
 
   $protocolTbody.innerHTML = '';
   if (!filtered.length) {
-    $protocolTbody.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">No protocol rows matched the current filter</td></tr>';
+    $protocolTbody.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;padding:2rem">No protocol rows matched the current filter</td></tr>';
     $protocolStatus.textContent = '0 protocols visible';
     return;
   }
@@ -610,7 +586,6 @@ function renderProtocolCatalog() {
       <td>${esc(proto.modulation || '—')}</td>
       <td>${esc(proto.encoding || '—')}</td>
       <td><span class="flow-pill ${supportTierClass(proto.support?.tier)}">${esc(proto.support?.label || 'Research')}</span></td>
-      <td><div class="table-tools">${(proto.tools || []).slice(0, 3).map(tool => `<a class="tool-chip protocol-table-link" href="${esc(tool.repo)}" target="_blank" rel="noreferrer">${esc(tool.name)}</a>`).join('')}</div></td>
     `;
     $protocolTbody.appendChild(tr);
   });
