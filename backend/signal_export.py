@@ -21,6 +21,10 @@ IMPORT_DIR = os.path.expanduser("~/.config/signalpirate/imports")
 IQ_CAPTURE_DIR = os.path.expanduser("~/.config/signalpirate/iq_captures")
 _IQ_EXPORT_USE_COUNT: Dict[str, int] = {}
 _IQ_DECODE_CACHE: Dict[str, List[str]] = {}
+_UNSIGNED_TO_SIGNED_IQ_TABLE = bytes.maketrans(
+    bytes(range(256)),
+    bytes((b ^ 0x80) for b in range(256)),
+)
 
 
 def ensure_dirs() -> None:
@@ -237,11 +241,11 @@ def import_flipper_sub(filepath: str) -> Optional[dict]:
 
 
 # ──────────────────────────────────────────────────────
-#  .c8 Export (HackRF Native IQ)
+#  .cs8 Export (HackRF Native IQ)
 # ──────────────────────────────────────────────────────
 
 def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
-    """Export signal directly to HackRF .c8 IQ format."""
+    """Export signal directly to signed complex 8-bit IQ (.cs8) for HackRF/URH."""
     ensure_dirs()
     from backend.payload_generator import PayloadGenerator
     
@@ -254,7 +258,9 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
         ts = time.time()
     
     if not filename:
-        filename = f"{_safe_filename(model)}_{int(ts)}.c8"
+        filename = f"{_safe_filename(model)}_{int(ts)}.cs8"
+    else:
+        filename = _normalize_iq_export_filename(filename)
         
     filepath = os.path.join(EXPORT_DIR, filename)
     freq_hz = _normalize_frequency(signal_data.get("frequency", signal_data.get("freq", 433_920_000)))
@@ -325,7 +331,7 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
                 frequency=tx_freq,
                 modulation=signal_data.get("modulation", signal_data.get("mod", "OOK"))
             )
-            logger.info(f"Exported .c8 from captured IQ: {filepath}")
+            logger.info(f"Exported .cs8 from captured IQ: {filepath}")
             return filepath
     
     pulses = signal_data.get("data", {}).get("pulses", []) if isinstance(signal_data.get("data"), dict) else []
@@ -414,15 +420,15 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
                 modulation="OOK"
             )
             
-    logger.info(f"Exported .c8: {filepath}")
+    logger.info(f"Exported .cs8: {filepath}")
     return filepath
 
 
 def _convert_iq_to_c8(src_path: str, dst_path: str, sample_rate: int = 2_000_000) -> int:
     """
-    Copy rtl_433 autosaved IQ to HackRF .c8.
-    Now that rtl_433 runs at 2 MS/s native, the captures are already in
-    complex signed 8-bit format (.cs8) natively compatible with HackRF and URH.
+    Convert/copy IQ data to signed complex 8-bit (.cs8).
+    rtl_433 autosaves are typically .cu8 (unsigned offset-binary), while
+    HackRF TX and URH expect signed int8 complex samples for .cs8 inputs.
     """
     out_rate = max(1, int(sample_rate))
 
@@ -438,6 +444,11 @@ def _convert_iq_to_c8(src_path: str, dst_path: str, sample_rate: int = 2_000_000
         return out_rate
 
     payload = data
+    src_format = _detect_iq_sample_format(src_path)
+    if src_format == "cu8":
+        payload = payload.translate(_UNSIGNED_TO_SIGNED_IQ_TABLE)
+    elif src_format == "u8":
+        logger.warning("Copying unsupported real-valued .u8 source as-is for export: %s", src_path)
 
     # Trim leading/trailing low-energy IQ to preserve packet timing and reduce
     # replaying unrelated background chunks from autosave files.
@@ -524,6 +535,24 @@ def _guess_iq_sample_rate_hz(path: str) -> int:
     value = int(m.group(1))
     unit = m.group(2).lower()
     return value * 1_000_000 if unit == "m" else value * 1_000
+
+
+def _detect_iq_sample_format(path: str) -> str:
+    """Infer the sample byte format from the filename extension."""
+    name = os.path.basename(path).lower()
+    if name.endswith((".complex16u", ".cu8")):
+        return "cu8"
+    if name.endswith((".complex16s", ".cs8", ".c8")):
+        return "cs8"
+    if name.endswith(".u8"):
+        return "u8"
+    return "unknown"
+
+
+def _normalize_iq_export_filename(filename: str) -> str:
+    """Normalize exported IQ filenames to URH-compatible .cs8."""
+    root, _ext = os.path.splitext(filename)
+    return f"{root}.cs8"
 
 
 def _parse_iq_center_freq_hz(path: str) -> Optional[int]:
@@ -743,9 +772,11 @@ def _write_c8_meta(
     meta = {
         "format": "signalpirate-c8-meta",
         "version": 1,
+        "sample_format": "cs8",
         "sample_rate": int(sample_rate),
         "frequency": int(frequency),
         "source_iq": source_iq,
+        "source_sample_format": _detect_iq_sample_format(source_iq) if source_iq else "",
         "target_model": target_model,
         "decoded_models": decoded_models or [],
         "model_match": bool(model_match),
@@ -769,7 +800,7 @@ def _write_urh_project(
     modulation: Optional[str] = "OOK"
 ) -> None:
     """
-    Generate a URH (Universal Radio Hacker) project archive next to the exported .c8
+    Generate a URH (Universal Radio Hacker) project archive next to the exported .cs8
     so that URH opens with the correct sample rate, frequency, and demodulation set.
     """
     import zipfile

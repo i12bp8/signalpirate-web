@@ -7,9 +7,9 @@ Built for Linux.
 ## Features
 - **Live Waterfall Dashboard**: Real-time signal interception via WebSocket.
 - **AI Signal Analysis**: Ask questions about captured protocols directly in the browser.
-- **Easy Export**: Save signals to `.c8` IQ files or JSON for analysis in URH (Universal Radio Hacker).
+- **Easy Export**: Save signals to `.cs8` IQ files or JSON for analysis in URH (Universal Radio Hacker).
 - **Dark Mode UI**: Clean, responsive, distraction-free interface.
-- *(Experimental)* HackRF Transmit support for replaying raw `.c8` files.
+- *(Experimental)* HackRF Transmit support for replaying raw `.cs8` files.
 
 ## Installation
 Run this one-liner to install dependencies, configure `udev` rules, and set up the Python environment:

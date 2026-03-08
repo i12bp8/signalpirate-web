@@ -19,7 +19,7 @@ def is_research_mode_enabled() -> bool:
     return _research_mode_enabled
 
 async def transmit_c8_file(filepath: str, frequency: int = 433920000, sample_rate: int = 2000000) -> Dict[str, Any]:
-    """Transmit a .c8 IQ file using hackrf_transfer."""
+    """Transmit a .cs8 IQ file using hackrf_transfer."""
     if not is_research_mode_enabled():
          return {"success": False, "error": "TX blocked: Research Mode disabled."}
          
@@ -58,7 +58,7 @@ async def transmit_c8_file(filepath: str, frequency: int = 433920000, sample_rat
         return {"success": False, "error": str(e)}
 
 async def transmit_sub_file(filepath: str) -> Dict[str, Any]:
-    """Convert a Flipper Zero .sub file to .c8 and transmit it."""
+    """Convert a Flipper Zero .sub file to .cs8 and transmit it."""
     if not is_research_mode_enabled():
          return {"success": False, "error": "TX blocked: Research Mode disabled."}
          
@@ -67,8 +67,8 @@ async def transmit_sub_file(filepath: str) -> Dict[str, Any]:
         return {"success": False, "error": f"File not found: {filepath}"}
 
     try:
-        # Convert .sub to .c8 payload
-        c8_path = path.with_suffix(".c8")
+        # Convert .sub to .cs8 payload
+        c8_path = path.with_suffix(".cs8")
         # We need to simulate the conversion process or use payload_generator
         # For this version, let's call payload_generator if it has a sub to c8 method
         with open(path, "r") as f:
@@ -82,13 +82,13 @@ async def transmit_sub_file(filepath: str) -> Dict[str, Any]:
                 except:
                     pass
                     
-        # Just use the generator to make the c8 file
+        # Just use the generator to make the cs8 file
         payload_generator.sub_to_c8(str(path), str(c8_path))
         
         if not c8_path.exists():
-             return {"success": False, "error": "Failed to convert .sub to .c8"}
+             return {"success": False, "error": "Failed to convert .sub to .cs8"}
              
-        # Transmit the converted c8 file
+        # Transmit the converted cs8 file
         return await transmit_c8_file(str(c8_path), frequency=freq)
         
     except Exception as e:

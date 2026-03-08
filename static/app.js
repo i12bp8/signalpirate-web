@@ -491,14 +491,16 @@ async function doExport(id, format) {
         setTimeout(() => a.remove(), 1000);
       };
 
-      // Auto-trigger download for the .c8 file
+      // Auto-trigger download for the IQ file
       dl('/api/library/' + encodeURIComponent(basename), basename);
       
       // Auto-trigger download for the companion URH project archive
-      setTimeout(() => {
-        const zipName = basename.replace('.c8', '.urh.zip');
-        dl('/api/library/' + encodeURIComponent(zipName), zipName);
-      }, 500);
+      if (/\.(?:cs8|c8)$/i.test(basename)) {
+        setTimeout(() => {
+          const zipName = basename.replace(/\.(?:cs8|c8)$/i, '.urh.zip');
+          dl('/api/library/' + encodeURIComponent(zipName), zipName);
+        }, 500);
+      }
       
     } else {
       toast('Export failed: ' + data.error, 'err');

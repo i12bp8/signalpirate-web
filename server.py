@@ -65,10 +65,18 @@ def _normalize_model_name(name: str) -> str:
 def _model_from_capture_filename(path: Path) -> str:
     return path.stem.split("_")[0] if "_" in path.stem else path.stem
 
+def _find_companion_iq_file(path: Path) -> Optional[Path]:
+    for suffix in (".cs8", ".c8"):
+        candidate = path.with_suffix(suffix)
+        if candidate.exists():
+            return candidate
+    return None
+
 def _prefer_iq_backed_c8(path: Path) -> Path:
     if path.suffix == ".sub":
-        c8 = path.with_suffix(".c8")
-        if c8.exists(): return c8
+        iq_path = _find_companion_iq_file(path)
+        if iq_path is not None:
+            return iq_path
     return path
 
 def _build_replay_profile(path: Path) -> dict:
@@ -350,11 +358,11 @@ async def _handle_ws_command(ws: WebSocket, msg: dict) -> None:
             before_last_id = signal_history[-1].get("_id", -1) if signal_history else -1
             path = CAPTURE_DIR / fname
             tx_path = path
-            # If a matching .c8 exists, prefer it over a .sub replay for fidelity.
+            # If a matching IQ export exists, prefer it over a .sub replay for fidelity.
             if fname.endswith(".sub"):
-                c8_candidate = path.with_suffix(".c8")
-                if c8_candidate.exists():
-                    tx_path = c8_candidate
+                iq_candidate = _find_companion_iq_file(path)
+                if iq_candidate is not None:
+                    tx_path = iq_candidate
             tx_path = _prefer_iq_backed_c8(tx_path)
             replay_profile = _build_replay_profile(tx_path)
             if not replay_profile.get("tx_allowed", True):
@@ -376,7 +384,7 @@ async def _handle_ws_command(ws: WebSocket, msg: dict) -> None:
                 await asyncio.sleep(0.2)
 
             try:
-                if tx_path.suffix == ".c8":
+                if tx_path.suffix in {".c8", ".cs8"}:
                     txp = _load_c8_tx_params(tx_path)
                     res = await tx_engine.transmit_c8_file(
                         str(tx_path),
@@ -427,9 +435,9 @@ async def _handle_ws_command(ws: WebSocket, msg: dict) -> None:
             path = CAPTURE_DIR / fname
             tx_path = path
             if fname.endswith(".sub"):
-                c8_candidate = path.with_suffix(".c8")
-                if c8_candidate.exists():
-                    tx_path = c8_candidate
+                iq_candidate = _find_companion_iq_file(path)
+                if iq_candidate is not None:
+                    tx_path = iq_candidate
             tx_path = _prefer_iq_backed_c8(tx_path)
             result = await _tx_probe_capture(tx_path, requested_name=fname)
             # Push probe-decode results into live dashboard stream for immediate visibility.
@@ -570,7 +578,7 @@ async def api_set_frequency(body: dict):
 async def api_library():
     """List saved capture files."""
     files = []
-    for ext in ("*.sub", "*.fob", "*.json", "*.c8", "*.xml", "*.zip", "*.raw", "*.cu8", "*.u8"):
+    for ext in ("*.sub", "*.fob", "*.json", "*.cs8", "*.c8", "*.xml", "*.zip", "*.raw", "*.cu8", "*.u8"):
         for f in CAPTURE_DIR.glob(ext):
             files.append({
                 "name": f.name,

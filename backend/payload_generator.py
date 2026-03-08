@@ -2,7 +2,7 @@
 Payload Generator — Create TX-ready waveforms from captured/crafted signals.
 
 Supports:
-  - OOK/FSK IQ file generation (.c8 format for hackrf_transfer)
+  - OOK/FSK IQ file generation (.cs8 format for hackrf_transfer/URH)
   - KeeLoq rolling code generation with keystore
   - Signal cloning with field modification
   - RollBack attack code prediction
@@ -27,7 +27,7 @@ class PayloadGenerator:
     # ── IQ Waveform Generation ──────────────────────────
 
     def generate_ook_iq(self, bitstream: str, symbol_rate: int, output_path: str) -> str:
-        """Generate OOK (On-Off Keying) IQ waveform as .c8 file."""
+        """Generate OOK (On-Off Keying) IQ waveform as .cs8 file."""
         samples_per_symbol = max(1, self.sample_rate // symbol_rate)
 
         with open(output_path, "wb") as f:
@@ -42,7 +42,7 @@ class PayloadGenerator:
         return output_path
 
     def generate_fsk_iq(self, bitstream: str, symbol_rate: int, deviation: int, output_path: str) -> str:
-        """Generate FSK (Frequency Shift Keying) IQ waveform as .c8 file."""
+        """Generate FSK (Frequency Shift Keying) IQ waveform as .cs8 file."""
         samples_per_symbol = max(1, self.sample_rate // symbol_rate)
         up_inc = 2.0 * math.pi * deviation / self.sample_rate
         down_inc = -up_inc
@@ -124,7 +124,7 @@ class PayloadGenerator:
         full_stream = preamble + pwm_stream
 
         ts = int(time.time())
-        filename = f"keeloq_{serial:06X}_c{counter}_{ts}.c8"
+        filename = f"keeloq_{serial:06X}_c{counter}_{ts}.cs8"
         output_path = os.path.join(output_dir, filename)
         self.generate_ook_iq(full_stream, 2000, output_path)
 
@@ -142,7 +142,7 @@ class PayloadGenerator:
         signal_data: dict,
         output_dir: str = "/tmp",
     ) -> dict:
-        """Clone a captured signal into a TX-ready .c8 file."""
+        """Clone a captured signal into a TX-ready .cs8 file."""
         pulses = signal_data.get("pulses", [])
         if not pulses:
             # Generate from hex data if available
@@ -165,7 +165,7 @@ class PayloadGenerator:
 
         model = signal_data.get("model", "unknown").replace(" ", "_")[:20]
         ts = int(time.time())
-        filename = f"replay_{model}_{ts}.c8"
+        filename = f"replay_{model}_{ts}.cs8"
         output_path = os.path.join(output_dir, filename)
 
         if pulses:
