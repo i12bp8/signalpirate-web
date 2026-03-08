@@ -15,6 +15,7 @@ DEFAULT_CONFIG = {
     "rtl_gain": 38,
     "unique_scans_only": False,
     "sniper_mode_model": "",
+    "tx_profiles": {},
 }
 
 _current_config = dict(DEFAULT_CONFIG)

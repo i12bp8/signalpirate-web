@@ -20,6 +20,7 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual('test/model', loaded['ai_model'])
             self.assertTrue(loaded['rtl_autolevel'])
             self.assertEqual('', loaded['sniper_mode_model'])
+            self.assertEqual({}, loaded['tx_profiles'])
 
     def test_save_config_round_trips_new_values(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -37,6 +38,7 @@ class ConfigTests(unittest.TestCase):
             self.assertTrue(reloaded['research_mode'])
             self.assertTrue(reloaded['unique_scans_only'])
             self.assertEqual('Auriol-V2', reloaded['sniper_mode_model'])
+            self.assertEqual({}, reloaded['tx_profiles'])
 
 
 if __name__ == '__main__':

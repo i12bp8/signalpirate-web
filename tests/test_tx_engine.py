@@ -41,6 +41,32 @@ class TxEngineTests(unittest.TestCase):
 
         self.assertEqual(433_920_000, tx_engine._sanitize_frequency(433_920_000))
 
+    def test_build_auto_tune_candidates_covers_safe_offsets_and_gains(self):
+        candidates = tx_engine.build_auto_tune_candidates(433_920_000)
+
+        self.assertEqual(
+            len(tx_engine.AUTO_TUNE_VGA_STEPS) * len(tx_engine.AUTO_TUNE_FREQ_OFFSETS_HZ),
+            len(candidates),
+        )
+        self.assertEqual(433_920_000, candidates[0]["frequency"])
+        self.assertEqual(0, candidates[0]["frequency_offset_hz"])
+        self.assertEqual(tx_engine.AUTO_TUNE_VGA_STEPS[0], candidates[0]["tx_vga"])
+        self.assertIn("MHz", candidates[0]["label"])
+
+    def test_score_probe_observation_prefers_target_hits_over_noise(self):
+        observed = [
+            {"model": "Auriol-HG02832"},
+            {"model": "Auriol-HG02832"},
+            {"model": "Random-Other"},
+        ]
+
+        score = tx_engine.score_probe_observation(observed, target_model="Auriol-HG02832")
+
+        self.assertEqual(2, score["target_hits"])
+        self.assertEqual(1, score["non_target_hits"])
+        self.assertEqual("Auriol-HG02832", score["dominant_model"])
+        self.assertGreater(score["score"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

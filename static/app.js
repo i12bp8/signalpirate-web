@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = {
   rtl_gain: 38,
   unique_scans_only: false,
   sniper_mode_model: '',
+  tx_profiles: {},
 };
 
 let ws = null;
@@ -113,7 +114,7 @@ function handle(msg) {
     return;
   }
   if (msg.type === 'tx_status') {
-    lastTxStatus = { ...(msg.data || {}), at: Date.now() };
+    lastTxStatus = { type: 'replay', ...(msg.data || {}), at: Date.now() };
     toast(lastTxStatus.success ? 'TX finished' : (lastTxStatus.error || 'TX failed'), lastTxStatus.success ? 'ok' : 'err');
     renderSelectedDetail();
     loadLibrary();
@@ -121,8 +122,17 @@ function handle(msg) {
   }
   if (msg.type === 'tx_probe_result') {
     const data = msg.data || {};
+    lastTxStatus = { type: 'probe', ...data, at: Date.now() };
     const probeHits = Array.isArray(data.probe_signals) ? data.probe_signals.length : 0;
     toast(data.success ? `Probe complete (${probeHits} decoded)` : (data.error || 'TX probe failed'), data.success ? 'ok' : 'err');
+    renderSelectedDetail();
+    return;
+  }
+  if (msg.type === 'tx_tune_result') {
+    const data = msg.data || {};
+    lastTxStatus = { type: 'auto_tune', ...data, at: Date.now() };
+    const suffix = data.saved_profile ? ' · profile saved' : '';
+    toast(data.success ? `Auto tune complete${suffix}` : (data.error || 'Auto tune failed'), data.success ? 'ok' : 'err');
     renderSelectedDetail();
     return;
   }
@@ -396,6 +406,7 @@ function renderDetail(sig) {
         <button class="btn accent" onclick="doExport(${sig._id}, 'c8')">Save</button>
         ${caps.can_replay_raw ? `<button class="btn" onclick="replaySignal(${sig._id})">Replay</button>` : ''}
         ${caps.can_replay_raw ? `<button class="btn" onclick="probeSignal(${sig._id})">Probe</button>` : ''}
+        ${caps.can_replay_raw ? `<button class="btn" onclick="autoTuneSignal(${sig._id})">Auto Tune</button>` : ''}
         <button class="btn" onclick="enableSniperById(${sig._id})">Focus Model</button>
       </div>
     </section>
@@ -527,14 +538,49 @@ function renderEditorField(signalId, field) {
 }
 
 function renderTxStatus(status) {
-  const models = Array.isArray(status.rx_models_2s) ? status.rx_models_2s.map(item => `${item.model} (${item.count})`).join(', ') : '—';
+  const models = Array.isArray(status.rx_models_2s)
+    ? status.rx_models_2s.map(item => `${item.model} (${item.count})`).join(', ')
+    : (Array.isArray(status.probe_models) ? status.probe_models.map(item => `${item.model} (${item.count})`).join(', ') : '—');
+  const profile = status.replay_profile || status.saved_profile || {};
+  const baseFreq = Number(profile.base_frequency || status.probe_frequency || status.frequency || 0);
+  const effectiveFreq = Number(profile.frequency || status.probe_frequency || status.frequency || 0);
+  const freqText = effectiveFreq > 0 ? (effectiveFreq / 1e6).toFixed(6) + ' MHz' : '—';
+  const offsetText = profile.frequency_offset_hz != null ? String(profile.frequency_offset_hz) + ' Hz' : '—';
+  const txVgaText = profile.tx_vga != null ? String(profile.tx_vga) : (status.tx_vga != null ? String(status.tx_vga) : '—');
+  const typeLabel = {
+    replay: 'Last Replay',
+    probe: 'Last Probe',
+    auto_tune: 'Last Auto Tune',
+  }[status.type] || 'Last TX Action';
+  const attemptSummary = Array.isArray(status.tuning_attempts)
+    ? `${status.tuning_attempts.length} candidates`
+    : '—';
+  const profileSource = status.saved_profile ? 'saved' : (profile.profile_type || 'default');
+  if (status.running) {
+    return `
+      <section class="tx-status-card ok">
+        <div class="tx-status-title">${esc(status.type === 'auto_tune' ? 'Auto Tune running' : 'TX running')}</div>
+        <div class="tx-status-meta">
+          <span class="detail-key">Status</span><span class="detail-val">${esc(status.message || 'running')}</span>
+        </div>
+      </section>
+    `;
+  }
   return `
     <section class="tx-status-card ${status.success ? 'ok' : 'err'}">
-      <div class="tx-status-title">${esc(status.success ? 'Last TX action completed' : 'Last TX action failed')}</div>
+      <div class="tx-status-title">${esc(status.success ? `${typeLabel} completed` : `${typeLabel} failed`)}</div>
       <div class="tx-status-meta">
         <span class="detail-key">Status</span><span class="detail-val">${esc(status.success ? 'success' : (status.error || 'error'))}</span>
         <span class="detail-key">RX Delta</span><span class="detail-val">${esc(String(status.rx_delta_2s ?? '—'))}</span>
-        <span class="detail-key">Target Hits</span><span class="detail-val">${esc(String(status.rx_target_hits_2s ?? '—'))}</span>
+        <span class="detail-key">Target Hits</span><span class="detail-val">${esc(String(status.rx_target_hits_2s ?? status.probe_target_hits ?? '—'))}</span>
+        <span class="detail-key">Frequency</span><span class="detail-val">${esc(freqText)}</span>
+        <span class="detail-key">Offset</span><span class="detail-val">${esc(offsetText)}</span>
+        <span class="detail-key">TX VGA</span><span class="detail-val">${esc(txVgaText)}</span>
+        <span class="detail-key">Profile</span><span class="detail-val">${esc(profileSource)}</span>
+        ${baseFreq > 0 ? `<span class="detail-key">Base Freq</span><span class="detail-val">${esc((baseFreq / 1e6).toFixed(6) + ' MHz')}</span>` : ''}
+        ${status.probe_score != null ? `<span class="detail-key">Score</span><span class="detail-val">${esc(String(status.probe_score))}</span>` : ''}
+        ${status.type === 'auto_tune' ? `<span class="detail-key">Candidates</span><span class="detail-val">${esc(attemptSummary)}</span>` : ''}
+        ${status.rx_notice ? `<span class="detail-key">Note</span><span class="detail-val">${esc(status.rx_notice)}</span>` : ''}
         <span class="detail-key">Models Seen</span><span class="detail-val">${esc(models)}</span>
       </div>
     </section>
@@ -765,6 +811,23 @@ window.probeSignal = async function(id) {
   if (!ensureResearchMode()) return;
   const filename = await ensureSignalExport(id);
   if (filename && !send({ cmd: 'tx_probe', data: { filename } })) toast('Connection offline, could not start probe', 'err');
+};
+
+window.autoTuneSignal = async function(id) {
+  if (!ensureResearchMode()) return;
+  const filename = await ensureSignalExport(id);
+  if (!filename) return;
+  lastTxStatus = {
+    type: 'auto_tune',
+    running: true,
+    success: true,
+    message: 'Sweeping conservative TX settings',
+    replay_profile: {},
+    at: Date.now(),
+  };
+  renderSelectedDetail();
+  toast('Auto tune started', 'ok');
+  if (!send({ cmd: 'tx_auto_tune', data: { filename } })) toast('Connection offline, could not start auto tune', 'err');
 };
 
 window.enableSniperById = function(id) {
