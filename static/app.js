@@ -63,7 +63,10 @@ function handle(msg) {
       if (d.config.rtl_squelch !== undefined) $('rtl-squelch').checked = !!d.config.rtl_squelch;
       if (d.config.rtl_gain !== undefined) $('rtl-gain').value = d.config.rtl_gain;
       if (d.config.unique_scans_only !== undefined && $('unique-scans')) $('unique-scans').checked = !!d.config.unique_scans_only;
-      if (d.config.sniper_mode_model !== undefined && $('sniper-model')) $('sniper-model').value = d.config.sniper_mode_model;
+      if (d.config.sniper_mode_model !== undefined) {
+        if ($('sniper-model')) $('sniper-model').value = d.config.sniper_mode_model;
+        if (typeof updateSniperUI === 'function') updateSniperUI(d.config.sniper_mode_model);
+      }
     }
   }
   else if (msg.type === 'signal') addSignal(msg.data);
@@ -329,8 +332,25 @@ window.enableSniper = function(model) {
   if (!$('sniper-model')) return toast('Settings tab missing sniper field', 'warn');
   $('sniper-model').value = model;
   $('btn-save-config').click();
-  toast('🎯 Sniper Mode: ' + model, 'ok');
+  if (model) {
+    toast('🎯 Sniper Mode: ' + model, 'ok');
+  } else {
+    toast('🎯 Sniper Mode Disabled', 'ok');
+  }
+  updateSniperUI(model);
 };
+
+function updateSniperUI(model) {
+  const banner = $('sniper-banner');
+  if (!banner) return;
+  if (model) {
+    banner.innerHTML = `<span>🎯 <strong>Sniper Mode Active:</strong> Filtering capturing exclusively for <code>${esc(model)}</code></span> <button class="btn-sm" style="background: #ff4444; color: white" onclick="enableSniper('')">✖ Disable Sniper Mode</button>`;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
 
 // ── AI Chat Event Listeners ──────────────────────
 const chatInput = $('chat-input');
