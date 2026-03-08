@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SignalPirate — RF Analysis Platform</title>
   <meta name="description" content="Universal sub-GHz RF signal analysis, capture, and exploitation platform">
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v=20260308-3">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
   <header id="main-header">
     <div class="brand-cluster">
-      <div class="brand-mark">SP</div>
+      <div class="brand-mark" aria-hidden="true">🏴‍☠️</div>
       <div class="brand-copy">
-        <h1>SignalPirate</h1>
-        <p>Capture, inspect, export, replay</p>
+        <h1><span class="brand-signal">Signal</span><span class="brand-pirate">Pirate</span></h1>
+        <p>Capture / decode / replay</p>
       </div>
     </div>
 
@@ -45,7 +45,7 @@
         <div class="panel-header tall">
           <div>
             <h2>Live Capture Stream</h2>
-            <p class="panel-copy">Watch incoming decodes, filter noise, and promote one capture into the workbench.</p>
+            <p class="panel-copy">Live decodes. Filter fast. Pick one to inspect.</p>
           </div>
           <div class="panel-controls">
             <input type="text" class="search-input" id="signal-search" placeholder="filter captures...">
@@ -54,15 +54,15 @@
           </div>
         </div>
         <div class="workflow-strip">
-          <span class="workflow-step active">1. Capture</span>
-          <span class="workflow-step">2. Inspect</span>
-          <span class="workflow-step">3. Export / Edit</span>
-          <span class="workflow-step">4. Replay</span>
+          <span class="workflow-step active">Capture</span>
+          <span class="workflow-step">Inspect</span>
+          <span class="workflow-step">Edit</span>
+          <span class="workflow-step">Replay</span>
         </div>
         <div class="stream-filter-card">
           <div class="stream-filter-copy">
-            <span class="eyebrow">Live stream controls</span>
-            <p>Apply capture-scoping filters here so you can immediately see when the stream is focused on one model or deduplicated.</p>
+            <span class="eyebrow">Stream Filters</span>
+            <p>Scope the live feed before it hits the table.</p>
           </div>
           <div class="stream-filter-grid">
             <div class="form-group">
@@ -108,15 +108,15 @@
         <div class="panel-header tall">
           <div>
             <h2>Signal Workbench</h2>
-            <p class="panel-copy">Decode context, run exports, replay raw IQ, or build supported protocol variants.</p>
+            <p class="panel-copy">Decoded fields, export, replay, and supported editors.</p>
           </div>
           <div class="selection-badge" id="selected-flow-pill">No capture selected</div>
         </div>
         <div class="workspace-scroll">
           <div class="workspace-intro">
             <div class="intro-card">
-              <span class="intro-kicker">Recommended flow</span>
-              <strong>Start in Monitor, save a good capture, then replay raw or build a variant only if the protocol is supported.</strong>
+              <span class="intro-kicker">Workbench</span>
+              <strong>Raw replay is exact. Editing only works for protocols with an encoder.</strong>
             </div>
             <div class="intro-metrics">
               <div class="metric-card"><span class="metric-label">Device</span><span class="metric-value" id="workspace-device">connecting</span></div>
@@ -136,7 +136,7 @@
             <div class="assistant-head">
               <div>
                 <h3>AI Assistant</h3>
-                <p>Ask about the selected capture or the whole session without leaving the workbench.</p>
+                <p>Ask about the selected capture or the session.</p>
               </div>
             </div>
             <div class="chat-window" id="chat-window">
@@ -160,7 +160,7 @@
         <div class="panel-header tall">
           <div>
             <h2>Protocol Atlas</h2>
-            <p class="panel-copy">Every protocol in the database with a support tier and GitHub tooling suggestions.</p>
+            <p class="panel-copy">Protocol support tiers and linked tooling.</p>
           </div>
           <div class="panel-controls">
             <input type="text" class="search-input wide" id="protocol-search" placeholder="filter protocols, categories, tools...">
@@ -174,7 +174,7 @@
             <span class="flow-pill replay">Replay After Capture</span>
             <span class="flow-pill view">Research / Capture</span>
           </div>
-          <p>Editable means SignalPirate has a protocol-aware editor. Replay means capture-first raw replay. Research means use the toolchain cards and inspect the waveform before assuming replay or editing will work.</p>
+          <p>`Editable` has an encoder. `Replay` means raw IQ only. `Research` means inspect first.</p>
         </div>
         <div class="table-wrapper">
           <table id="protocol-table">
@@ -202,7 +202,7 @@
         <div class="panel-header tall">
           <div>
             <h2>Capture Library</h2>
-            <p class="panel-copy">Stored IQ, URH projects, and generated replay variants.</p>
+            <p class="panel-copy">Stored IQ, URH zips, and generated variants.</p>
           </div>
           <div class="panel-controls">
             <button class="btn-sm accent" id="btn-refresh-lib">Refresh</button>
@@ -210,7 +210,7 @@
         </div>
         <div class="callout-card">
           <strong>Library workflow</strong>
-          <p>Use saved `.cs8` files for faithful raw replay, companion `.urh.zip` files for waveform analysis, and `variant` entries for synthesized protocol edits.</p>
+          <p>Use `.cs8` for raw replay, `.urh.zip` for analysis, and `variant` rows for generated edits.</p>
         </div>
         <div class="table-wrapper">
           <table id="library-table">
@@ -237,7 +237,7 @@
         <div class="panel-body hero-body">
           <div>
             <h2>Settings</h2>
-            <p class="panel-copy">Tune the radio, control safety gates, and manage AI/system behavior from one place.</p>
+            <p class="panel-copy">Radio, TX safety, AI, and engine state.</p>
           </div>
           <div class="hero-actions">
             <div class="save-state idle" id="settings-save-state">Autosave enabled</div>
@@ -365,6 +365,6 @@
     <span>Educational and research use only. TX only on hardware and spectrum you are authorized to test.</span>
   </footer>
 
-  <script src="/static/app.js?v=20260308-2"></script>
+  <script src="/static/app.js?v=20260308-3"></script>
 </body>
 </html>

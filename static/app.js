@@ -351,7 +351,7 @@ function renderSelectedDetail() {
     $detail.innerHTML = `
       <div class="placeholder-msg compact">
         <span class="placeholder-icon">◎</span>
-        <p>Select a capture from the stream to inspect decoded fields, export IQ, or run replay actions.</p>
+        <p>Select a capture to inspect, export, replay, or edit.</p>
       </div>
     `;
     return;
@@ -401,7 +401,7 @@ function renderDetail(sig) {
 
   html += `
     <section class="action-card">
-      <div class="action-copy">Save the raw capture to the library, replay the exact IQ when available, or synthesize a supported variant from decoded fields.</div>
+      <div class="action-copy">Save raw IQ, replay exact capture, or build a supported variant.</div>
       <div class="action-row">
         <button class="btn accent" onclick="doExport(${sig._id}, 'c8')">Save to Library</button>
         ${caps.can_replay_raw ? `<button class="btn" onclick="replaySignal(${sig._id})">Replay Raw</button>` : ''}
@@ -516,7 +516,7 @@ function renderEditorField(signalId, field) {
       <div class="setting-row">
         <div>
           <strong>${esc(field.label || field.name)}</strong>
-          <p>Toggle this field before building the variant.</p>
+          <p>Toggle before build.</p>
         </div>
         <label class="toggle-switch">
           <input type="checkbox" id="${id}"${field.value ? ' checked' : ''}>
