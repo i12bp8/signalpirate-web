@@ -806,11 +806,13 @@ def _write_urh_project(
 </UniversalRadioHackerProject>
 """
     try:
+        # Give the internal contents a parent folder so it extracts cleanly for URH
+        project_folder_name = os.path.basename(zip_path).replace(".urh.zip", "")
+        
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            # Add the project file
-            zf.writestr("URHProject.xml", xml_content)
-            # Add the .c8 data file
-            zf.write(c8_filepath, c8_filename)
+            # Place the XML config and the data file INSIDE the project folder
+            zf.writestr(f"{project_folder_name}/URHProject.xml", xml_content)
+            zf.write(c8_filepath, f"{project_folder_name}/{c8_filename}")
         logger.info(f"Generated URH project archive: {zip_path}")
     except Exception as e:
         logger.warning(f"Failed writing URH project archive for {c8_filepath}: {e}")
