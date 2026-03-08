@@ -1,31 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --bg: #0b0d12;
-  --bg-2: #10131a;
-  --panel: rgba(255, 255, 255, 0.06);
-  --panel-2: rgba(255, 255, 255, 0.04);
-  --panel-3: rgba(255, 255, 255, 0.09);
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.14);
-  --text: #f4f7fb;
-  --text-2: rgba(244, 247, 251, 0.78);
-  --text-3: rgba(244, 247, 251, 0.52);
-  --text-4: rgba(244, 247, 251, 0.36);
-  --accent: #7fe7bf;
-  --accent-soft: rgba(127, 231, 191, 0.14);
-  --accent-2: #89b7ff;
-  --accent-2-soft: rgba(137, 183, 255, 0.14);
+  --bg: #000000;
+  --bg-2: #050607;
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-2: rgba(255, 255, 255, 0.03);
+  --panel-3: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.11);
+  --text: #f6f7fb;
+  --text-2: rgba(246, 247, 251, 0.74);
+  --text-3: rgba(246, 247, 251, 0.48);
+  --text-4: rgba(246, 247, 251, 0.3);
+  --accent: #8ce8c2;
+  --accent-soft: rgba(140, 232, 194, 0.1);
+  --accent-2: #8fb6ff;
+  --accent-2-soft: rgba(143, 182, 255, 0.1);
   --warn: #f6c979;
   --warn-soft: rgba(246, 201, 121, 0.14);
   --danger: #ff8f8f;
   --danger-soft: rgba(255, 143, 143, 0.14);
-  --shadow-lg: 0 28px 80px rgba(0, 0, 0, 0.36);
-  --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.22);
-  --radius-xl: 28px;
-  --radius-lg: 22px;
-  --radius-md: 16px;
-  --radius-sm: 12px;
+  --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.26);
+  --shadow-md: 0 8px 22px rgba(0, 0, 0, 0.18);
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
   --mono: 'IBM Plex Mono', monospace;
   --sans: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
@@ -37,9 +37,7 @@ html, body {
   color: var(--text);
   font-family: var(--sans);
   background:
-    radial-gradient(circle at top left, rgba(127, 231, 191, 0.11), transparent 26%),
-    radial-gradient(circle at 85% 0%, rgba(137, 183, 255, 0.14), transparent 28%),
-    radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.04), transparent 38%),
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.03), transparent 35%),
     linear-gradient(180deg, var(--bg-2), var(--bg));
 }
 body {
@@ -63,42 +61,40 @@ button, input, select, textarea { font: inherit; }
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   margin: 16px 16px 0;
-  padding: 16px 18px;
+  padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
-  background: rgba(10, 13, 18, 0.72);
-  backdrop-filter: blur(24px) saturate(140%);
+  background: rgba(7, 8, 10, 0.88);
+  backdrop-filter: blur(18px) saturate(120%);
   box-shadow: var(--shadow-md);
 }
 .brand-cluster {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 15px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
-  border: 1px solid rgba(255,255,255,0.14);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
-  font-size: 1.1rem;
+  gap: 10px;
 }
 .brand-copy h1 {
   margin: 0;
-  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.7rem;
   line-height: 0.95;
   font-weight: 700;
   letter-spacing: -0.04em;
 }
+.brand-flag {
+  display: inline-block;
+  font-size: 0.92em;
+  line-height: 1;
+  filter: saturate(0.9);
+}
 .brand-copy p {
-  margin: 4px 0 0;
+  margin: 3px 0 0 32px;
   color: var(--text-3);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -114,9 +110,9 @@ button, input, select, textarea { font: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px;
+  padding: 5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--line);
 }
 .tab {
@@ -137,9 +133,9 @@ button, input, select, textarea { font: inherit; }
   background: rgba(255, 255, 255, 0.05);
 }
 .tab.active {
-  color: #081016;
-  background: linear-gradient(180deg, #dff6ff, #98c7ff 62%, #87e8c0);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 6px 18px rgba(137,183,255,0.25);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .header-meta {
@@ -162,11 +158,11 @@ button, input, select, textarea { font: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 12px;
+  padding: 7px 11px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 .device-badge {
   color: var(--text-2);
@@ -218,7 +214,7 @@ button, input, select, textarea { font: inherit; }
 .metric-chip {
   color: var(--accent-2);
   border-color: rgba(137, 183, 255, 0.2);
-  background: var(--accent-2-soft);
+  background: rgba(255,255,255,0.04);
 }
 .save-state.warn {
   color: var(--danger);
@@ -237,8 +233,8 @@ button, input, select, textarea { font: inherit; }
   padding: 8px 10px;
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -294,8 +290,8 @@ button, input, select, textarea { font: inherit; }
 .action-card,
 .settings-hero {
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.045));
-  backdrop-filter: blur(22px) saturate(140%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.03));
+  backdrop-filter: blur(16px) saturate(120%);
   box-shadow: var(--shadow-lg);
 }
 .panel {
@@ -394,7 +390,7 @@ button, input, select, textarea { font: inherit; }
   align-items: center;
   padding: 14px 18px;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
 }
 .stream-toolbar-title,
 .eyebrow,
@@ -438,14 +434,14 @@ button, input, select, textarea { font: inherit; }
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 0 10px 10px;
+  padding: 0 8px 8px;
 }
 #signal-table,
 #protocol-table,
 #library-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 10px;
+  border-spacing: 0 8px;
 }
 thead th {
   position: sticky;
@@ -477,7 +473,7 @@ td {
   font-size: 0.78rem;
   color: var(--text-2);
   vertical-align: top;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -519,7 +515,7 @@ td.model-cell {
 .tx-status-card,
 .action-card {
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 14px;
 }
 .detail-stack,
 .detail-column,
@@ -554,7 +550,7 @@ td.model-cell {
   padding: 10px 12px;
   border-radius: var(--radius-md);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
 }
 .quick-stat .label {
   display: block;
@@ -639,7 +635,7 @@ td.model-cell {
   padding: 10px 12px;
   border-radius: var(--radius-md);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .assistant-card { gap: 10px; }
@@ -663,7 +659,7 @@ td.model-cell {
   padding: 10px 12px;
   border-radius: 16px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   line-height: 1.5;
   font-size: 0.82rem;
 }
@@ -751,10 +747,10 @@ td.model-cell {
 .btn.accent,
 .btn-sm.accent,
 .freq-btn.active {
-  color: #06111a;
-  border-color: rgba(255,255,255,0.18);
-  background: linear-gradient(180deg, #ebf6ff, #9bc5ff 62%, #88e7c2);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), 0 10px 24px rgba(137,183,255,0.18);
+  color: var(--text);
+  border-color: rgba(143, 182, 255, 0.18);
+  background: rgba(143, 182, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 input,
@@ -764,16 +760,16 @@ textarea {
   padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.035);
   color: var(--text);
   outline: none;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
 }
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(137, 183, 255, 0.34);
-  box-shadow: 0 0 0 4px rgba(137, 183, 255, 0.12);
+  border-color: rgba(143, 182, 255, 0.24);
+  box-shadow: 0 0 0 3px rgba(143, 182, 255, 0.08);
 }
 select {
   appearance: none;
@@ -812,7 +808,7 @@ select {
   padding: 12px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
 }
 .setting-row.primary {
   border-color: rgba(127, 231, 191, 0.18);
@@ -875,7 +871,7 @@ select {
   padding: 10px 12px;
   border-radius: var(--radius-md);
   border: 1px solid var(--line);
-  background: rgba(0, 0, 0, 0.22);
+  background: rgba(0, 0, 0, 0.18);
   font-family: var(--mono);
   font-size: 0.74rem;
   line-height: 1.5;
@@ -891,7 +887,7 @@ select {
   text-align: center;
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text-3);
 }
 .placeholder-msg.compact { min-height: 150px; }
