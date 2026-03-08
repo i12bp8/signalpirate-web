@@ -420,36 +420,24 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
 
 def _convert_iq_to_c8(src_path: str, dst_path: str, sample_rate: int = 2_000_000) -> int:
     """
-    Convert autosaved IQ to HackRF .c8.
-    rtl_433 autosaves are typically unsigned I/Q (uint8); HackRF expects signed int8.
-    If source sample-rate is below HackRF minimum TX rate (2 MS/s), upsample by
-    repeating I/Q pairs so on-air timing is preserved.
+    Copy rtl_433 autosaved IQ to HackRF .c8.
+    Now that rtl_433 runs at 2 MS/s native, the captures are already in
+    complex signed 8-bit format (.cs8) natively compatible with HackRF and URH.
     """
-    src_rate = max(1, int(sample_rate))
-    if src_rate < 2_000_000:
-        repeat = (2_000_000 + src_rate - 1) // src_rate
-    else:
-        repeat = 1
-    out_rate = src_rate * repeat
+    out_rate = max(1, int(sample_rate))
 
-    ext = os.path.splitext(src_path)[1].lower()
     with open(src_path, "rb") as src:
         data = src.read()
+    
     if len(data) % 2:
         data = data[:-1]
+        
     if not data:
         with open(dst_path, "wb") as dst:
             dst.write(b"")
         return out_rate
 
-    if ext in (".c8", ".cs8"):
-        payload = data
-    else:
-        # uint8 (0..255) -> int8 two's complement centered at 0.
-        payload = bytearray(len(data))
-        for i, b in enumerate(data):
-            payload[i] = (b - 128) & 0xFF
-        payload = bytes(payload)
+    payload = data
 
     # Trim leading/trailing low-energy IQ to preserve packet timing and reduce
     # replaying unrelated background chunks from autosave files.
