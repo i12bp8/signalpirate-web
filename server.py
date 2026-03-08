@@ -55,6 +55,8 @@ ws_clients: Set[WebSocket] = set()
 # Signal history (kept in memory for API access)
 signal_history: List[Dict[str, Any]] = []
 MAX_HISTORY = 1000
+_next_signal_id = 0
+_seen_hashes: Dict[int, float] = {}
 
 # ── Missing TX Helpers ────────────────────────────────────────────────────────
 def _normalize_model_name(name: str) -> str:
@@ -81,8 +83,35 @@ async def _tx_probe_capture(path: Path, requested_name: str) -> dict:
 # ── WebSocket broadcast ──────────────────────────────────────────────────────
 def on_signal(signal_dict: Dict[str, Any]) -> None:
     """Called by RTL433Engine for each decoded signal — broadcast to all WS clients."""
-    # Store in history
-    signal_dict["_id"] = len(signal_history)
+    global _next_signal_id, _seen_hashes
+    
+    cfg = get_config()
+    
+    # Sniper Mode filter: ONLY pass signals matching sniper model
+    sniper_model = cfg.get("sniper_mode_model", "").strip()
+    if sniper_model:
+        model = str(signal_dict.get("model", "")).strip()
+        if model.lower() != sniper_model.lower():
+            return
+            
+    # Unique Scans filter: Drop identical repeating signals
+    if cfg.get("unique_scans_only", False):
+        sig_data = dict(signal_dict.get("data", {}))
+        for k in ["time", "rssi", "snr", "noise", "msg1", "msg2", "mic", "fsk_pe"]:
+            sig_data.pop(k, None)
+        sig_hash = hash(f"{signal_dict.get('model')}_{signal_dict.get('frequency')}_{json.dumps(sig_data, sort_keys=True)}")
+        now = time.time()
+        
+        # Debounce identical signals within a 60 second window
+        if sig_hash in _seen_hashes and (now - _seen_hashes[sig_hash]) < 60:
+            _seen_hashes[sig_hash] = now
+            return
+        _seen_hashes[sig_hash] = now
+
+    # Store in history using a monotonic ID
+    signal_dict["_id"] = _next_signal_id
+    _next_signal_id += 1
+    
     signal_history.append(signal_dict)
     if len(signal_history) > MAX_HISTORY:
         signal_history.pop(0)

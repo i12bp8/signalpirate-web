@@ -279,14 +279,14 @@ def export_hackrf_c8(signal_data: dict, filename: str = None) -> str:
         if iq_file:
             logger.info("Matched IQ capture for export: %s", iq_file)
             
-    # Verify/upgrade IQ selection by checking nearby files for one that actually
-    # decodes to the selected model.
-    iq_file = _choose_iq_for_export(
-        model=model,
-        signal_ts=ts,
-        freq_hz=freq_hz,
-        preferred_iq=iq_file if isinstance(iq_file, str) else "",
-    )
+        # If we STILL don't have an IQ file, try to find a nearby one that decodes
+        if not iq_file:
+            iq_file = _choose_iq_for_export(
+                model=model,
+                signal_ts=ts,
+                freq_hz=freq_hz,
+                preferred_iq="",
+            )
     if isinstance(iq_file, str) and os.path.isfile(iq_file):
         decoded_models = _decode_models_from_iq(iq_file)
         model_lc = str(model or "").strip().lower()
@@ -803,7 +803,7 @@ def _write_urh_project(
     
     xml_content = f"""<?xml version="1.0" ?>
 <UniversalRadioHackerProject description="" collapse_project_tabs="0" modulation_was_edited="0" broadcast_address_hex="ffff">
-  <signal name="{project_name}" filename="{c8_filename}" samples_per_symbol="100" center="{center_freq_mhz}" center_spacing="0.1" tolerance="5" noise_threshold="0.0001" noise_minimum="-0.0001" noise_maximum="0.0001" modulation_type="{urh_mod_idx}" sample_rate="{sample_rate}" pause_threshold="8" message_length_divisor="1" bits_per_symbol="1" costas_loop_bandwidth="0.1">
+  <signal name="{project_name}" filename="{c8_filename}" samples_per_symbol="100" center="0" center_spacing="0.1" tolerance="5" noise_threshold="0.02" noise_minimum="-0.02" noise_maximum="0.02" modulation_type="{urh_mod_idx}" sample_rate="{sample_rate}" pause_threshold="8" message_length_divisor="1" bits_per_symbol="1" costas_loop_bandwidth="0.1">
     <messages/>
   </signal>
   <open_file name="{c8_filename}" position="0" />

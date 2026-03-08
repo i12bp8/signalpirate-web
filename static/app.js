@@ -62,6 +62,8 @@ function handle(msg) {
       if (d.config.rtl_autolevel !== undefined) $('rtl-autolevel').checked = !!d.config.rtl_autolevel;
       if (d.config.rtl_squelch !== undefined) $('rtl-squelch').checked = !!d.config.rtl_squelch;
       if (d.config.rtl_gain !== undefined) $('rtl-gain').value = d.config.rtl_gain;
+      if (d.config.unique_scans_only !== undefined && $('unique-scans')) $('unique-scans').checked = !!d.config.unique_scans_only;
+      if (d.config.sniper_mode_model !== undefined && $('sniper-model')) $('sniper-model').value = d.config.sniper_mode_model;
     }
   }
   else if (msg.type === 'signal') addSignal(msg.data);
@@ -151,6 +153,7 @@ function renderDetail(sig) {
 
   let h = `<div class="detail-actions">
     <button class="btn accent" onclick="doExport(${sig._id},'c8')">Save to Library</button>
+    <button class="btn" onclick="enableSniper('${esc(sig.model||'')}')" title="Only scan for this protocol">🎯 Sniper Mode</button>
   </div>`;
 
   h += sec('Metadata', grid({
@@ -314,10 +317,20 @@ document.addEventListener('click', (e) => {
       ai_model: $('ai-model').value,
       rtl_autolevel: $('rtl-autolevel') ? $('rtl-autolevel').checked : true,
       rtl_squelch: $('rtl-squelch') ? $('rtl-squelch').checked : true,
-      rtl_gain: $('rtl-gain') ? parseInt($('rtl-gain').value, 10) : 38
+      rtl_gain: $('rtl-gain') ? parseInt($('rtl-gain').value, 10) : 38,
+      unique_scans_only: $('unique-scans') ? $('unique-scans').checked : false,
+      sniper_mode_model: $('sniper-model') ? $('sniper-model').value.trim() : ""
     }}});
   }
 });
+
+// ── Sniper Mode helper
+window.enableSniper = function(model) {
+  if (!$('sniper-model')) return toast('Settings tab missing sniper field', 'warn');
+  $('sniper-model').value = model;
+  $('btn-save-config').click();
+  toast('🎯 Sniper Mode: ' + model, 'ok');
+};
 
 // ── AI Chat Event Listeners ──────────────────────
 const chatInput = $('chat-input');

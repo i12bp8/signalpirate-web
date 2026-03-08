@@ -190,6 +190,21 @@
             <span style="font-size:13px">Squelch (-Y squelch)</span>
           </div>
 
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+            <label class="toggle-switch">
+              <input type="checkbox" id="unique-scans">
+              <span class="toggle-slider"></span>
+            </label>
+            <span style="font-size:13px">Unique Scans Only (Drop identical replays within 60s)</span>
+          </div>
+
+          <div class="form-group" style="margin-top:12px; margin-bottom: 12px">
+            <label>🎯 Sniper Mode (Filter by Model Name) — leave blank to disable</label>
+            <div class="form-row">
+              <input type="text" id="sniper-model" value="" class="input-lg mono" placeholder="e.g. Auriol-V2">
+            </div>
+          </div>
+
           <div class="form-group" style="margin-top:12px; margin-bottom: 12px">
             <label>Manual Gain (dB) — applied if Auto Level is disabled</label>
             <div class="form-row">
