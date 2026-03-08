@@ -441,16 +441,9 @@ def _convert_iq_to_c8(src_path: str, dst_path: str, sample_rate: int = 2_000_000
 
     # Trim leading/trailing low-energy IQ to preserve packet timing and reduce
     # replaying unrelated background chunks from autosave files.
-    trimmed = _trim_iq_edges(payload, src_rate)
+    trimmed = _trim_iq_edges(payload, out_rate)
     if trimmed and len(trimmed) < len(payload):
         payload = trimmed
-
-    if repeat > 1:
-        out = bytearray()
-        for i in range(0, len(payload), 2):
-            pair = payload[i:i+2]
-            out.extend(pair * repeat)
-        payload = bytes(out)
 
     with open(dst_path, "wb") as dst:
         dst.write(payload)
