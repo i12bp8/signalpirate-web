@@ -164,8 +164,8 @@ class RTL433Engine:
             return await self._start_rtlsdr(rtl_autolevel, rtl_squelch, rtl_gain)
 
     async def _start_rtlsdr(self, rtl_autolevel: bool, rtl_squelch: bool, rtl_gain: int) -> bool:
-        # Wider capture profile for 433 MHz: default 250k misses off-center traffic.
-        sample_rate = 1_024_000
+        # Wider capture profile: 2M native matches HackRF TX constraints
+        sample_rate = 2_000_000
         cmd = [
             "rtl_433",
             "-f", str(self.frequency),
@@ -178,6 +178,9 @@ class RTL433Engine:
             
         if rtl_squelch:
             cmd.extend(["-Y", "squelch"])
+            
+        # Use magnitude estimation for cleaner ASK/OOK slicing
+        cmd.extend(["-Y", "magest"])
             
         cmd.extend([
             "-S", "known",
@@ -213,6 +216,7 @@ class RTL433Engine:
             "-s", str(sample_rate),
             "-g", gain_str,
             "-Y", "autolevel",
+            "-Y", "magest",
             "-S", "known",
             "-F", f"syslog:127.0.0.1:{UDP_PORT}",
             "-M", "level", "-M", "protocol", "-M", "time:unix",
