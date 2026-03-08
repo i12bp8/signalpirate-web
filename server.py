@@ -31,6 +31,8 @@ from backend.sdr_detector import SDRDetector
 from backend.config import load_config, save_config, get_config
 from backend import ai_engine
 from backend import signal_export
+from backend import tx_engine
+from backend import protocol_features
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger("signalpirate.server")
@@ -46,6 +48,7 @@ proto_db = ProtocolDB(str(DATA_DIR))
 vuln_db = VulnDB(str(DATA_DIR))
 proto_db.load()
 vuln_db.load()
+protocol_catalog = protocol_features.build_protocol_catalog(proto_db.get_all())
 sdr = SDRDetector()
 engine = RTL433Engine(protocol_db=proto_db, vuln_db=vuln_db)
 
@@ -119,6 +122,7 @@ def on_signal(signal_dict: Dict[str, Any]) -> None:
     # Store in history using a monotonic ID
     signal_dict["_id"] = _next_signal_id
     _next_signal_id += 1
+    signal_dict["capabilities"] = protocol_features.get_signal_capabilities(signal_dict)
     
     signal_history.append(signal_dict)
     if len(signal_history) > MAX_HISTORY:
@@ -153,7 +157,6 @@ async def startup():
         # Auto-enable TX if saved in config
         if cfg.get("research_mode"):
             try:
-                from backend import tx_engine
                 tx_engine.enable_research_mode()
                 logger.info("⚠️ TX Research Mode auto-enabled from config")
             except ImportError:
@@ -245,6 +248,10 @@ async def _handle_ws_command(ws: WebSocket, msg: dict) -> None:
     elif cmd == "save_settings":
         new_cfg = data.get("settings", {})
         updated = save_config(new_cfg)
+        if updated.get("research_mode"):
+            tx_engine.enable_research_mode()
+        else:
+            tx_engine.disable_research_mode()
         
         # Apply the new SDR config live if we're running an RTL SDR
         cfg = get_config()
@@ -263,6 +270,9 @@ async def _handle_ws_command(ws: WebSocket, msg: dict) -> None:
         count = int(data.get("count", 50))
         sigs = list(signal_history)[-count:] if signal_history else []
         await ws.send_text(json.dumps({"type": "signals", "data": sigs}, default=str))
+
+    elif cmd == "get_protocol_catalog":
+        await ws.send_text(json.dumps({"type": "protocol_catalog", "data": protocol_catalog}, default=str))
 
     elif cmd == "export_signal":
         format_type = data.get("format", "sub")
@@ -562,8 +572,9 @@ async def api_signals(count: int = 50):
 
 @app.get("/api/signals/{signal_id}")
 async def api_signal_detail(signal_id: int):
-    if 0 <= signal_id < len(signal_history):
-        return signal_history[signal_id]
+    sig = next((s for s in signal_history if s.get("_id") == signal_id), None)
+    if sig is not None:
+        return sig
     raise HTTPException(status_code=404, detail="Signal not found")
 
 
@@ -580,15 +591,41 @@ async def api_library():
     files = []
     for ext in ("*.sub", "*.fob", "*.json", "*.cs8", "*.c8", "*.xml", "*.zip", "*.raw", "*.cu8", "*.u8"):
         for f in CAPTURE_DIR.glob(ext):
+            companion_zip = f.with_suffix(".urh.zip")
+            variant_meta = Path(str(f) + ".variant.json")
             files.append({
                 "name": f.name,
                 "format": f.suffix[1:],
                 "size": f.stat().st_size,
                 "modified": f.stat().st_mtime,
-                "path": str(f)
+                "path": str(f),
+                "can_tx": f.suffix in {".cs8", ".c8", ".sub"},
+                "has_urh_zip": companion_zip.exists(),
+                "is_variant": variant_meta.exists(),
             })
     files.sort(key=lambda x: x["modified"], reverse=True)
     return files
+
+
+@app.get("/api/protocols")
+async def api_protocols():
+    return protocol_catalog
+
+
+@app.post("/api/editor/build")
+async def api_editor_build(body: dict):
+    sig_id = body.get("signal_id")
+    edits = body.get("edits", {})
+    sig = next((s for s in signal_history if s.get("_id") == sig_id), None)
+    if not sig:
+        return JSONResponse({"ok": False, "error": "Signal not found"})
+
+    try:
+        result = protocol_features.build_protocol_variant(sig, edits, CAPTURE_DIR)
+        return {"ok": True, **result}
+    except Exception as e:
+        logger.error(f"Variant build failed: {e}")
+        return JSONResponse({"ok": False, "error": str(e)})
 
 
 @app.get("/api/library/{filename}")

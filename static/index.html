@@ -9,7 +9,6 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-  <!-- Header -->
   <header id="main-header">
     <div class="header-left">
       <h1 class="logo"><span class="logo-text">signal</span><span class="accent">pirate</span></h1>
@@ -21,6 +20,7 @@
     <div class="header-center">
       <nav class="tabs" id="main-tabs">
         <button class="tab active" data-tab="dashboard">Dashboard</button>
+        <button class="tab" data-tab="protocols">Protocols</button>
         <button class="tab" data-tab="library">Library</button>
         <button class="tab" data-tab="settings">Settings</button>
       </nav>
@@ -35,7 +35,6 @@
     </div>
   </header>
 
-  <!-- Dashboard -->
   <main class="tab-content active" id="tab-dashboard">
     <div class="dashboard-grid">
       <section class="panel signal-table-panel">
@@ -47,7 +46,7 @@
           </div>
         </div>
         <div class="table-wrapper">
-          <div id="sniper-banner" style="display:none; background: rgba(0,0,0,0.5); border-left: 3px solid var(--accent); color: var(--accent); padding: 10px 14px; margin-bottom: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: space-between;"></div>
+          <div id="sniper-banner" style="display:none; background: rgba(0,0,0,0.5); border-left: 3px solid var(--accent); color: var(--accent); padding: 10px 14px; margin-bottom: 8px; font-size: 13px; font-weight: 500; align-items: center; justify-content: space-between;"></div>
           <table id="signal-table">
             <thead>
               <tr>
@@ -57,6 +56,7 @@
                 <th id="th-mod" class="sortable">Mod<span class="sort-arrow"></span></th>
                 <th id="th-rssi" class="sortable">RSSI<span class="sort-arrow"></span></th>
                 <th id="th-sec" class="sortable">Sec<span class="sort-arrow"></span></th>
+                <th id="th-flow" class="sortable">Flow<span class="sort-arrow"></span></th>
               </tr>
             </thead>
             <tbody id="signal-tbody"></tbody>
@@ -68,14 +68,12 @@
       <section class="panel detail-panel" id="detail-panel">
         <div class="panel-header"><h2 id="detail-title">Signal Inspection</h2></div>
         <div class="detail-split">
-          <!-- Left Column: Capture Details -->
           <div class="detail-content-col" id="detail-content">
             <div class="placeholder-msg">
               <span class="placeholder-icon">◉</span>
               <p>Select a signal to inspect</p>
             </div>
           </div>
-          <!-- Right Column: AI Chat -->
           <div class="detail-chat-col" id="detail-chat">
             <div class="chat-window" id="chat-window">
               <div class="chat-msg ai-msg">
@@ -92,9 +90,34 @@
     </div>
   </main>
 
+  <main class="tab-content" id="tab-protocols">
+    <section class="panel" style="flex:1">
+      <div class="panel-header">
+        <h2>Protocol Atlas</h2>
+        <div class="panel-controls">
+          <input type="text" class="search-input" id="protocol-search" placeholder="filter protocols, categories, tools...">
+          <button class="btn-sm accent" id="btn-refresh-protocols">refresh</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="protocol-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Modulation</th>
+              <th>Encoding</th>
+              <th>Support</th>
+              <th>GitHub Tools</th>
+            </tr>
+          </thead>
+          <tbody id="protocol-tbody"></tbody>
+        </table>
+      </div>
+      <div class="panel-footer"><span id="protocol-status">loading protocol atlas</span></div>
+    </section>
+  </main>
 
-
-  <!-- Library -->
   <main class="tab-content" id="tab-library">
     <section class="panel" style="flex:1">
       <div class="panel-header">
@@ -105,16 +128,13 @@
       </div>
       <div class="table-wrapper">
         <table id="library-table">
-          <thead><tr><th>File</th><th>Format</th><th>Size</th><th>Date</th><th style="text-align:right">Actions</th></tr></thead>
+          <thead><tr><th>File</th><th>Format</th><th>Size</th><th>Date</th><th>Flags</th><th style="text-align:right">Actions</th></tr></thead>
           <tbody id="library-tbody"></tbody>
         </table>
       </div>
     </section>
   </main>
 
-
-
-  <!-- Settings -->
   <main class="tab-content" id="tab-settings">
     <div class="settings-grid">
       <div class="split-row">
@@ -199,6 +219,14 @@
             <span style="font-size:13px">Unique Scans Only (Drop identical replays within 60s)</span>
           </div>
 
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+            <label class="toggle-switch">
+              <input type="checkbox" id="research-mode">
+              <span class="toggle-slider"></span>
+            </label>
+            <span style="font-size:13px">Research Mode (unlock TX replay and TX probe actions)</span>
+          </div>
+
           <div class="form-group" style="margin-top:12px; margin-bottom: 12px">
             <label>🎯 Sniper Mode (Filter by Model Name) — leave blank to disable</label>
             <div class="form-row">
@@ -221,6 +249,6 @@
     <span>EDUCATIONAL & RESEARCH ONLY — TX on own devices — Unauthorized RF may violate law</span>
   </footer>
 
-  <script src="/static/app.js?v=20260307-5"></script>
+  <script src="/static/app.js?v=20260308-1"></script>
 </body>
 </html>

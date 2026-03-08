@@ -15,6 +15,12 @@ def enable_research_mode() -> None:
     _research_mode_enabled = True
     logger.warning("TX RESEARCH MODE ENABLED - Transmissions unlocked.")
 
+
+def disable_research_mode() -> None:
+    global _research_mode_enabled
+    _research_mode_enabled = False
+    logger.info("TX Research Mode disabled.")
+
 def is_research_mode_enabled() -> bool:
     return _research_mode_enabled
 
