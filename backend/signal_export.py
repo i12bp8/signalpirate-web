@@ -796,43 +796,21 @@ def _write_urh_project(
     project_name = os.path.splitext(c8_filename)[0]
     xml_path = os.path.join(project_dir, f"{project_name}.xml")
     
-    # Map SignalPirate modulations to URH modulation indexes (0=ASK/OOK, 1=FSK)
     urh_mod_idx = 1 if "FSK" in str(modulation).upper() else 0
+    center_freq_mhz = frequency / 1_000_000.0
     
-    # URH project template
-    # Note: <filename> is relative to the directory containing the .xml file
     xml_content = f"""<?xml version="1.0" ?>
-<project description="" name="{project_name}">
-  <message_formats/>
-  <simulators/>
-  <files>
-    <!-- URH simply lists the files in the project here -->
-    <file filename="{c8_filename}" />
-  </files>
-  <participants/>
-  <decodings/>
-  <field_types/>
-</project>
-"""
-    
-    # In addition to the project file, URH expects a companion .c8.xml file
-    # for track settings like modulation, noise, center freq.
-    # We write THIS file specifically so URH reads the configuration.
-    track_xml_path = os.path.join(project_dir, f"{c8_filename}.xml")
-    track_xml_content = f"""<?xml version="1.0" ?>
-<signal bit_len="1" center="{frequency / 1000000.0}" center_spacing="1" error_tolerance="5" message_length_divisor="1" modulation_type="{urh_mod_idx}" name="{project_name}" noise_maximum="0.0001" noise_minimum="-0.0001" pause_threshold="8" sample_rate="{sample_rate}" samples_per_symbol="100" tolerance="5">
-  <messages/>
-  <views>
-    <view show_data_bits="1" show_data_hex="0" show_protocol="0" show_signal="1" view_type="1"/>
-  </views>
-</signal>
+<UniversalRadioHackerProject description="" collapse_project_tabs="0" modulation_was_edited="0" broadcast_address_hex="ffff">
+  <signal name="{project_name}" filename="{c8_filename}" samples_per_symbol="100" center="{center_freq_mhz}" center_spacing="0.1" tolerance="5" noise_threshold="0.0001" noise_minimum="-0.0001" noise_maximum="0.0001" modulation_type="{urh_mod_idx}" sample_rate="{sample_rate}" pause_threshold="8" message_length_divisor="1" bits_per_symbol="1" costas_loop_bandwidth="0.1">
+    <messages/>
+  </signal>
+  <open_file name="{c8_filename}" position="0" />
+</UniversalRadioHackerProject>
 """
     try:
         with open(xml_path, "w") as f:
             f.write(xml_content)
-        with open(track_xml_path, "w") as f:
-            f.write(track_xml_content)
-        logger.info(f"Generated URH project and signal files: {xml_path}")
+        logger.info(f"Generated URH project file: {xml_path}")
     except Exception as e:
         logger.warning(f"Failed writing URH project file for {c8_filepath}: {e}")
 
