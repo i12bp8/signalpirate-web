@@ -807,6 +807,21 @@ def _write_urh_project(
     <messages/>
   </signal>
   <open_file name="{c8_filename}" position="0" />
+  <group name="New Group" id="0" />
+  <protocol>
+    <decodings>
+      <decoding name="Non Return To Zero (NRZ)">
+        <step type="Non Return To Zero (NRZ)" />
+      </decoding>
+    </decodings>
+    <participants />
+    <messages />
+    <message_types>
+      <message_type name="default" id="0">
+        <ruleset />
+      </message_type>
+    </message_types>
+  </protocol>
 </UniversalRadioHackerProject>
 """
     try:
