@@ -461,10 +461,10 @@ async function doExport(id, format) {
       // Auto-trigger download for the .c8 file
       dl('/api/library/' + encodeURIComponent(basename), basename);
       
-      // Auto-trigger download for the companion .xml URH project file
+      // Auto-trigger download for the companion URH project archive
       setTimeout(() => {
-        const xmlName = basename.replace('.c8', '.xml');
-        dl('/api/library/' + encodeURIComponent(xmlName), xmlName);
+        const zipName = basename.replace('.c8', '.urh.zip');
+        dl('/api/library/' + encodeURIComponent(zipName), zipName);
       }, 500);
       
     } else {

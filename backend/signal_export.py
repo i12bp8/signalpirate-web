@@ -788,13 +788,15 @@ def _write_urh_project(
     modulation: Optional[str] = "OOK"
 ) -> None:
     """
-    Generate a URH (Universal Radio Hacker) project file next to the exported .c8
+    Generate a URH (Universal Radio Hacker) project archive next to the exported .c8
     so that URH opens with the correct sample rate, frequency, and demodulation set.
     """
+    import zipfile
+    
     c8_filename = os.path.basename(c8_filepath)
     project_dir = os.path.dirname(c8_filepath)
     project_name = os.path.splitext(c8_filename)[0]
-    xml_path = os.path.join(project_dir, f"{project_name}.xml")
+    zip_path = os.path.join(project_dir, f"{project_name}.urh.zip")
     
     urh_mod_idx = 1 if "FSK" in str(modulation).upper() else 0
     center_freq_mhz = frequency / 1_000_000.0
@@ -808,11 +810,14 @@ def _write_urh_project(
 </UniversalRadioHackerProject>
 """
     try:
-        with open(xml_path, "w") as f:
-            f.write(xml_content)
-        logger.info(f"Generated URH project file: {xml_path}")
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            # Add the project file
+            zf.writestr("URHProject.xml", xml_content)
+            # Add the .c8 data file
+            zf.write(c8_filepath, c8_filename)
+        logger.info(f"Generated URH project archive: {zip_path}")
     except Exception as e:
-        logger.warning(f"Failed writing URH project file for {c8_filepath}: {e}")
+        logger.warning(f"Failed writing URH project archive for {c8_filepath}: {e}")
 
 
 # ──────────────────────────────────────────────────────
