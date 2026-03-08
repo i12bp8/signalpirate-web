@@ -378,7 +378,6 @@ function renderDetail(sig) {
     <section class="hero-card">
       <div class="hero-head">
         <div>
-          <div class="eyebrow">Selected Capture</div>
           <h3>${esc(sig.model || 'Unknown')}</h3>
           <p class="hero-subtitle">${esc(caps.protocol_support?.summary || caps.summary || 'Capture ready for analysis.')}</p>
         </div>
@@ -394,22 +393,16 @@ function renderDetail(sig) {
         ${quickStat('RSSI', rssi)}
         ${quickStat('Protocol', sig.protocol_info?.name || sig.protocol_id || 'Unknown')}
       </div>
+      <div class="action-row inline-actions">
+        <button class="btn accent" onclick="doExport(${sig._id}, 'c8')">Save</button>
+        ${caps.can_replay_raw ? `<button class="btn" onclick="replaySignal(${sig._id})">Replay</button>` : ''}
+        ${caps.can_replay_raw ? `<button class="btn" onclick="probeSignal(${sig._id})">Probe</button>` : ''}
+        <button class="btn" onclick="enableSniperById(${sig._id})">Focus Model</button>
+      </div>
     </section>
   `;
 
   if (lastTxStatus) html += renderTxStatus(lastTxStatus);
-
-  html += `
-    <section class="action-card">
-      <div class="action-copy">Save raw IQ, replay exact capture, or build a supported variant.</div>
-      <div class="action-row">
-        <button class="btn accent" onclick="doExport(${sig._id}, 'c8')">Save to Library</button>
-        ${caps.can_replay_raw ? `<button class="btn" onclick="replaySignal(${sig._id})">Replay Raw</button>` : ''}
-        ${caps.can_replay_raw ? `<button class="btn" onclick="probeSignal(${sig._id})">TX Probe</button>` : ''}
-        <button class="btn" onclick="enableSniperById(${sig._id})">Sniper Mode</button>
-      </div>
-    </section>
-  `;
 
   html += '<div class="workbench-grid"><div class="detail-column">';
   html += renderDataCard('Decoded Payload', payload.length ? payload : [['Status', 'No decoded payload fields']]);
@@ -538,7 +531,7 @@ function renderEditorField(signalId, field) {
 function renderToolsCard(tools) {
   return `
     <section class="detail-card">
-      <h4>GitHub Toolchain</h4>
+      <h4>Recommended Tools</h4>
       <div class="tool-list">${tools.slice(0, 5).map(renderToolCard).join('')}</div>
     </section>
   `;
@@ -549,10 +542,9 @@ function renderToolCard(tool) {
     <div class="tool-card">
       <div class="tool-card-head">
         <h4><a href="${esc(tool.repo)}" target="_blank" rel="noreferrer">${esc(tool.name)}</a></h4>
-        <span class="tool-chip">score ${esc(String(tool.score || 0))}</span>
       </div>
       <div class="tool-summary">${esc(tool.summary || '')}</div>
-      <div class="tool-reasons">${(tool.reasons || []).map(reason => `• ${esc(reason)}`).join('<br>')}</div>
+      <div class="tool-reasons">${(tool.reasons || []).slice(0, 1).map(reason => esc(reason)).join('')}</div>
     </div>
   `;
 }
@@ -564,7 +556,7 @@ function renderTxStatus(status) {
       <div class="tx-status-title">${esc(status.success ? 'Last TX action completed' : 'Last TX action failed')}</div>
       <div class="tx-status-meta">
         <span class="detail-key">Status</span><span class="detail-val">${esc(status.success ? 'success' : (status.error || 'error'))}</span>
-        <span class="detail-key">Observed RX Delta</span><span class="detail-val">${esc(String(status.rx_delta_2s ?? '—'))}</span>
+        <span class="detail-key">RX Delta</span><span class="detail-val">${esc(String(status.rx_delta_2s ?? '—'))}</span>
         <span class="detail-key">Target Hits</span><span class="detail-val">${esc(String(status.rx_target_hits_2s ?? '—'))}</span>
         <span class="detail-key">Models Seen</span><span class="detail-val">${esc(models)}</span>
       </div>

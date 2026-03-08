@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SignalPirate — RF Analysis Platform</title>
   <meta name="description" content="Universal sub-GHz RF signal analysis, capture, and exploitation platform">
-  <link rel="stylesheet" href="/static/style.css?v=20260308-3">
+  <link rel="stylesheet" href="/static/style.css?v=20260308-4">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
@@ -53,36 +53,17 @@
             <button class="btn-sm" id="btn-clear" title="Clear all captures">Clear</button>
           </div>
         </div>
-        <div class="workflow-strip">
-          <span class="workflow-step active">Capture</span>
-          <span class="workflow-step">Inspect</span>
-          <span class="workflow-step">Edit</span>
-          <span class="workflow-step">Replay</span>
-        </div>
-        <div class="stream-filter-card">
-          <div class="stream-filter-copy">
-            <span class="eyebrow">Stream Filters</span>
-            <p>Scope the live feed before it hits the table.</p>
+        <div class="stream-toolbar">
+          <div class="stream-toolbar-title">Stream Filters</div>
+          <input type="text" id="quick-sniper-model" class="input-lg mono" placeholder="focus model or leave empty">
+          <div class="stream-toggle">
+            <span>Unique only</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="quick-unique-scans">
+              <span class="toggle-slider"></span>
+            </label>
           </div>
-          <div class="stream-filter-grid">
-            <div class="form-group">
-              <label for="quick-sniper-model">Focus Model</label>
-              <input type="text" id="quick-sniper-model" class="input-lg mono" placeholder="All models">
-            </div>
-            <div class="setting-row compact">
-              <div>
-                <strong>Unique Only</strong>
-                <p>Suppress repeated decodes in the live stream.</p>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="quick-unique-scans">
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="stream-filter-actions">
-              <button class="btn-sm accent" id="btn-apply-stream-filters">Apply Stream Filters</button>
-            </div>
-          </div>
+          <button class="btn-sm accent" id="btn-apply-stream-filters">Apply</button>
         </div>
         <div id="filter-banner" class="inline-banner hidden"></div>
         <div class="table-wrapper">
@@ -106,29 +87,24 @@
 
       <section class="panel workspace-panel">
         <div class="panel-header tall">
-          <div>
+          <div class="workbench-headline">
             <h2>Signal Workbench</h2>
             <p class="panel-copy">Decoded fields, export, replay, and supported editors.</p>
           </div>
-          <div class="selection-badge" id="selected-flow-pill">No capture selected</div>
-        </div>
-        <div class="workspace-scroll">
-          <div class="workspace-intro">
-            <div class="intro-card">
-              <span class="intro-kicker">Workbench</span>
-              <strong>Raw replay is exact. Editing only works for protocols with an encoder.</strong>
-            </div>
-            <div class="intro-metrics">
-              <div class="metric-card"><span class="metric-label">Device</span><span class="metric-value" id="workspace-device">connecting</span></div>
-              <div class="metric-card"><span class="metric-label">Research Mode</span><span class="metric-value" id="workspace-mode">locked</span></div>
-              <div class="metric-card"><span class="metric-label">Selected Flow</span><span class="metric-value" id="workspace-flow">none</span></div>
+          <div class="workbench-topline">
+            <div class="selection-badge" id="selected-flow-pill">No capture selected</div>
+            <div class="workbench-meta">
+              <span class="metric-chip"><span class="metric-chip-label">Device</span><span id="workspace-device">connecting</span></span>
+              <span class="metric-chip"><span class="metric-chip-label">Mode</span><span id="workspace-mode">locked</span></span>
+              <span class="metric-chip"><span class="metric-chip-label">Flow</span><span id="workspace-flow">none</span></span>
             </div>
           </div>
-
+        </div>
+        <div class="workspace-scroll">
           <div id="detail-content" class="detail-stack">
             <div class="placeholder-msg compact">
               <span class="placeholder-icon">◎</span>
-              <p>Select a capture from the stream to open the workbench.</p>
+              <p>Select a capture to open the workbench.</p>
             </div>
           </div>
 
@@ -365,6 +341,6 @@
     <span>Educational and research use only. TX only on hardware and spectrum you are authorized to test.</span>
   </footer>
 
-  <script src="/static/app.js?v=20260308-3"></script>
+  <script src="/static/app.js?v=20260308-4"></script>
 </body>
 </html>
